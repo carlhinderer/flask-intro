@@ -1,0 +1,60 @@
+-----------------------------------------------------------------------
+|  CHAPTER 1 - INSTALLATION                                           |
+-----------------------------------------------------------------------
+
+- Git Review
+
+    # Check out an existing commit
+    $ git checkout 1a
+
+
+    # Discard local changes
+    $ git reset --hard
+
+    # Discard local changes and checkout a specific branch
+    $ git reset --hard origin/master
+
+
+    # Update local repo with branches and commit history from remote
+    $ git fetch --all
+
+    # Update local repo with tags from remote
+    $ git fetch --tags
+
+    # Fetch and merge
+    $ git pull
+
+
+    # Check difference between 2 commits
+    $ git diff 1a 1b
+
+
+
+- Introducing Flask
+
+    - Flask is a small 'micro-framework'.  It has a core and basic services, but was
+        designed with extensibility from the ground up.  You pick the extensions
+        you need.
+
+
+    - Flask has 3 main dependencies:
+
+        1. Routing, debugging, and WSGI subsystems from 'Werkzeug'
+        2. Template support from 'Jinja2'
+        3. Command-line integration from 'Click'
+
+      These dependencies are all authored by Armin Ronacher, the author of Flask.
+
+
+    - Flask has no native support for accessing databases, validating web forms, 
+        authenticating users, or other high-level tasks.
+
+
+
+- Getting Started
+
+    # Install flask in virtual environment
+    $ pip install flask
+
+    # Create an empty directory for new application
+    $ mkdir flasky
