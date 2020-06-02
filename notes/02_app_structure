@@ -94,6 +94,98 @@
 
 - Debug Mode
 
+    - Flask applications can optionally be extended to run in 'debug mode', which enables
+        the very convenient 'reloader' and 'debugger' options.
+
+        # Run in debug mode
+        $ export FLASK_APP=hello.py
+        $ export FLASK_DEBUG=1
+        $ flask run
+
+
+    - Debug mode should never be used in production, since it allows remote execution and opens
+        a bunch of security problems.  To ensure this doesn't happen accidentally, the debugger
+        must be activated with a pin.
+
+
+
 - Command-Line Options
 
-- The Request-Response Cycle
+    - The 'flask' command supports a number of options.
+
+        # Get general help
+        $ flask --help
+
+        # Get help for a specific command
+        $ flask run --help
+
+
+        # Start a python shell session in the context of the application
+        $ flask shell
+
+
+        # Make the web server listen for connections on the public network interface
+        $ flask run --host 0.0.0.0
+
+        # Other useful options for 'flask run'
+        --reload
+        --no-reload
+        --debugger 
+        --no-debugger
+
+
+
+- Application and Request Contexts
+
+    - When Flask receives a request from a client, it needs to make a few objects
+        available to the view function that will handle it.  
+
+      For instance, the 'request' object encapsulates the HTTP request sent by the client.
+
+        from flask import request
+
+        @app.route('/')
+        def index():
+            user_agent = request.headers.get('User-Agent')
+            return '<p>Your browser is {}</p>'.format(user_agent)
+
+
+    - To avoid having to pass the request object as a parameter in every view method, Flask
+        uses contexts to temporarily make certain objects globally accessible.
+
+      Note that even though 'request' looks like a global variable, it cannot really be, since
+        several threads on the server can be handling different requets.  Contexts can make
+        certain variables globally accessible to a thread without interfering with other threads.
+
+
+    - There are 2 contexts in Flask: the 'application context' and 'request context'.
+
+
+    - Here are the Flask context globals:
+
+        Variable name       Context                 Description
+        ----------------------------------------------------------------------------------
+        current_app         Application context     The application instance for the active 
+                                                      application.
+
+        g                   Application context     An object that the application can use for 
+                                                      temporary storage during the handling of a 
+                                                      request. This variable is reset with each request.
+
+        request             Request context         The request object, which encapsulates the contents 
+                                                      of an HTTP request sent by the client.
+
+        session             Request context         The user session, a dictionary that the application 
+                                                      can use to store values that are “remembered” 
+                                                      between requests.
+
+
+
+
+- Request Dispatching
+
+- The Request Object
+
+- Request Hooks
+
+- Responses
