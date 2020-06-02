@@ -1,0 +1,73 @@
+-----------------------------------------------------------------------
+|  CHAPTER 2 - BASIC APPLICATION STRUCTURE                            |
+-----------------------------------------------------------------------
+
+- Initialization
+
+    - All Flask applications must create an 'application instance'.  The web server 
+        passes all requests it receives from clients to this object for handling, using a
+        protocol called WSGI.  
+
+
+    - The application instance is an object of class 'Flask':
+
+        from flask import Flask
+        app = Flask(__name__)
+
+
+
+- Routes and View Functions
+
+    - The most convenient way to define a route in a Flask application is through the
+        'app.route' decorator exposed by the application interface.  
+
+        @app.route('/')
+        def index():
+            return '<h1>Hello World!</h1>'
+
+
+    - We can also call a separate method to register a route instead of using the 
+        decorator.
+
+        def index():
+            return '<h1>Hello World!'</h1>
+
+        app.add_url_rule('/', 'index', index)
+
+
+    - We can also use parameters from routes.
+
+        @app.route('/user/<name>')
+        def user(name):
+            return '<h1>Hello, {}!</h1>'.format(name)
+
+
+    - By default, the parameters are strings, but we can accept types of 'int', 'float', and
+        'path' as well.
+
+        @app.route('/user/<int:id>')
+
+
+
+- A Complete Application
+
+    - Here, we create the simplest possible Flask application:
+
+        from flask import Flask
+        app = Flask(__name__)
+
+        @app.route('/')
+        def index():
+            return '<h1>Hello World!</h1>'
+
+
+
+- Development Web Server
+
+- Dynamic Routes
+
+- Debug Mode
+
+- Command-Line Options
+
+- The Request-Response Cycle
