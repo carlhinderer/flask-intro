@@ -64,7 +64,33 @@
 
 - Development Web Server
 
+    - Flask applications include a development web server that can be started with the
+        'flask run' command.
+
+        # The 'flask run' command looks for the application to run in the FLASK_APP env var
+        $ export FLASK_APP=hello.py
+
+        # Start the development server
+        $ flask run
+
+
+    - Note that older versions of Flask did not have the 'flask' command, and would require
+        the 'app.run()' method to be used instead.
+
+        if __name__ == '__main__':
+            app.run()
+
+
+
 - Dynamic Routes
+
+    - Now, let's add our dynamic route to 'hello.py'.
+
+        @app.route('/user/<name>')
+        def user(name):
+            return '<h1>Hello, {}!</h1>'.format(name)
+
+
 
 - Debug Mode
 
