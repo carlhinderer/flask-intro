@@ -180,9 +180,35 @@
                                                       between requests.
 
 
+    - Flash pushes the application and request contexts before dispatching a request to the
+        application, and removes them after the request is handled.  When the application context
+        is pushed, the 'current_app' and 'g' variables become available to the thread.  When
+        the request context is pushed, the 'request' and 'session' variables become available
+        as well.
+
+
+    - Here is an example of using the application context:
+
+        >>> from hello import app
+        >>> from flask import current_app
+
+        # Fails since there is no active application context
+        >>> current_app.name
+        RuntimeError: working outside of application context
+
+        # Valid once the application context is pushed
+        >>> app_ctx = app.app_context()
+        >>> app_ctx.push()
+        >>> current_app.name
+        'hello'
+        >>> app_ctx.pop()
+
+
 
 
 - Request Dispatching
+
+    - 
 
 - The Request Object
 
