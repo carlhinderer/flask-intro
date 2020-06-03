@@ -208,9 +208,66 @@
 
 - Request Dispatching
 
-    - 
+    - We can programatically view the application's entire URL map.
+
+        >>> from hello import app
+        >>> app.url_map
+
+
 
 - The Request Object
+
+    - Here is a list of commonly used attributes and methods of the 'request' object.
+
+        Attribute or Method     Description
+        ----------------------------------------------------------------------------
+        form                    A dictionary with all the form fields submitted with the request.
+
+        args                    A dictionary with all the arguments passed in the query string 
+                                  of the URL.
+
+        values                  A dictionary that combines the values in form and args.
+
+        cookies                 A dictionary with all the cookies included in the request.
+
+        headers                 A dictionary with all the HTTP headers included in the request.
+
+        files                   A dictionary with all the file uploads included with the request.
+
+        get_data()              Returns the buffered data from the request body.
+
+        get_json()              Returns a Python dictionary with the parsed JSON included in the 
+                                  body of the request.
+
+        blueprint               The name of the Flask blueprint that is handling the request.
+
+        endpoint                The name of the Flask endpoint that is handling the request. Flask 
+                                  uses the name of the view function as the endpoint name for a route.
+
+        method                  The HTTP request method, such as GET or POST.
+
+        scheme                  The URL scheme (http or https).
+
+        is_secure()             Returns True if the request came through a secure (HTTPS) connection.
+
+        host                    The host defined in the request, including the port number if given 
+                                  by the client.
+
+        path                    The path portion of the URL.
+
+        query_string            The query string portion of the URL, as a raw binary value.
+
+        full_path               The path and query string portions of the URL.
+
+        url                     The complete URL requested by the client.
+
+        base_url                Same as url, but without the query string component.
+
+        remote_addr             The IP address of the client.
+
+        environ                 The raw WSGI environment dictionary for the request.
+
+
 
 - Request Hooks
 
