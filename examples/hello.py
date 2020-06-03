@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, make_response
 
 app = Flask(__name__)
 
@@ -14,3 +14,13 @@ def user(name):
 def browser():
     user_agent = request.headers.get('User-Agent')
     return '<p>Your browser is {}</p>'.format(user_agent)
+
+@app.route('/bad')
+def bad():
+    return '</h1>Bad Request</h1>', 400
+
+@app.route('/cookie')
+def cookie():
+    response = make_response('<h1>This document carries a cookie!</h1>')
+    response.set_cookie('answer', '42')
+    return response

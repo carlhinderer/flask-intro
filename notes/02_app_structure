@@ -271,4 +271,55 @@
 
 - Request Hooks
 
+    - Sometimes, we want to execute some code before or after each request is processed.
+        For instance, we may want to create a DB connection or authenticate the user.
+        We can do this using request hooks, which are implemented as decorators.
+
+
+    - There are 4 hooks supported by Flask:
+
+        before_request
+
+          Registers a function to run before each request.
+
+        before_first_request
+
+          Registers a function to run only before the first request is handled. This can 
+            be a convenient way to add server initialization tasks.
+
+        after_request
+
+          Registers a function to run after each request, but only if no unhandled 
+            exceptions occurred.
+
+        teardown_request
+
+          Registers a function to run after each request, even if unhandled exceptions 
+            occurred.
+
+
+
 - Responses
+
+    - A view function returns the response to a request.  By default, the status code is
+        set to 200.  To send a different response code:
+
+        @app.route('/')
+        def index():
+            return '<h1>Bad Request</h1>', 400
+
+      Responses can also return a 3rd argument, a dictionary of headers that are added to 
+        the HTTP response.
+
+
+    - Instead of returning values as a header, we can also return a response object instead.
+        We build a response object using the 'make_response' method, which takes the same
+        1, 2, or 3 arguments that can be returned in a tuple.
+
+        from flask import make_response
+
+        @app.route('/')
+        def index():
+            response = make_response('<h1>This document carries a cookie!</h1>')
+            response.set_cookie('answer', '42')
+            return response
