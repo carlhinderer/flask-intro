@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, redirect, abort
 
 app = Flask(__name__)
 
@@ -24,3 +24,11 @@ def cookie():
     response = make_response('<h1>This document carries a cookie!</h1>')
     response.set_cookie('answer', '42')
     return response
+
+@app.route('/redirect')
+def redirect_to_google():
+    return redirect('http://www.google.com/')
+
+@app.route('/abort')
+def abort():
+    abort(404)

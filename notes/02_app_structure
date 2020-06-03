@@ -323,3 +323,49 @@
             response = make_response('<h1>This document carries a cookie!</h1>')
             response.set_cookie('answer', '42')
             return response
+
+
+    - Here are some commonly used attributes and methods of the 'response' object.
+
+        Attribute or Method     Description
+        ------------------------------------------------------------------------------------
+        status_code             The numeric HTTP status code
+
+        headers                 A dictionary-like object with all the headers that will be sent 
+                                  with the response
+
+        set_cookie()            Adds a cookie to the response
+
+        delete_cookie()         Removes a cookie
+
+        content_length          The length of the response body
+
+        content_type            The media type of the response body
+
+        set_data()              Sets the response body as a string or bytes value
+
+        get_data()              Gets the response body
+
+
+
+- Redirects
+
+    - A redirect is a special response that typically gives a 302 reponse code and a URL
+        to navigate to.
+
+        from flask import redirect
+
+        @app.route('/')
+        def index():
+            return redirect('http://www.example.com')
+
+
+    - The 'abort' method is used for error handling.
+
+        from flask import abort
+
+        @app.route('/user/<id>')
+        def get_user(id):
+            if not user:
+                abort(404)
+            return '<h1>Hello, {}</h1>'.format(user.name)
