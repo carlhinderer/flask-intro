@@ -253,6 +253,50 @@
 
 
 
+- Flask-Bootstrap's Basic Template Blocks
+
+    - Here is the list of Flask-Bootstrap blocks that can be used in derived templates.
+
+        Block name           Description
+        ------------------------------------------------------------------------------
+        doc                  The entire HTML document
+
+        html_attribs         Attributes inside the <html> tag
+
+        html                 The contents of the <html> tag
+
+        head                 The contents of the <head> tag
+
+        title                The contents of the <title> tag
+
+        metas                The list of <meta> tags
+
+        styles               CSS definitions
+
+        body_attribs         Attributes inside the <body> tag
+
+        body                 The contents of the <body> tag
+
+        navbar               User-defined navigation bar
+
+        content              User-defined page content
+
+        scripts              JavaScript declarations at the bottom of the document
+
+
+    - Many of the blocks listed here are used by Flask-Bootstrap itself, so overriding
+        them directly would cause problems.  For instance, the 'styles' and 'scripts'
+        blocks are where Bootstrap CSS and JS files are declared.  
+
+      If the application needs to add its own content to a block that already has some
+        content, Jinja2's 'super()' function must be used.  For instance, if we need to add
+        a new JS file to our derived template:
+
+        {% block scripts %}
+        {{ super() }}
+        <script type='text/javascript' src='my-script.js'></script>
+        {% endblock %}
+
 
 
 - Custom Error Pages
