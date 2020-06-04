@@ -8,6 +8,11 @@
     type="image/x-icon">
 {% endblock %}
 
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }}
+{% endblock %}
+
 {% block title %}Flasky{% endblock %}
 
 {% block navbar %}

@@ -437,3 +437,39 @@
 
 
 - Localization with Dates and Times with Flask-Moment
+
+    - Handling dates and times in a web application is not a trivial problem.  The server
+        needs uniform time units independent of the location of each user, so UTC is used.
+        However, users want to see the time formatted to their local time and customs.
+
+      The solution is to send UTC times to the web browser and let JavaScript render the time
+        in local units.  Web browsers do a good job of this, since they have access to the time
+        zone and locale settings on the user's computer.
+
+
+    - Moment.js is an excellent open-source JS library that renders dates and times in the 
+        browser.  Flask-Moment is an extension for Flask applications that integrates Moment.js
+        into Jinja2 templates.
+
+        # Install flask-moment
+        $ pip install flask-moment
+
+        # Initialize flask-moment
+        from flask_moment import Moment
+        moment = Moment(app)
+
+
+    - Flask-Moment requires jQuery in addition to Moment.  These 2 libraries must be included
+        somewhere in the HTML, either directly or via the helper methods provided by the 
+        extension.
+
+      Since Bootstrap is installed and already includes jQuery, only Moment needs to be added in
+        this case.
+
+
+        # templates/base.html
+        
+        {% block scripts %}
+        {{ super() }}
+        {{ moment.include_moment() }}
+        {% endblock %}
