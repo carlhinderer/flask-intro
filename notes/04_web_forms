@@ -50,3 +50,22 @@
 
       Flask-WTF generates security tokens for all forms and stores them in the user session,
         which is protected with a cryptographic signature generated from the secret key.
+
+
+
+- Form Classes
+
+    - When using Flask-WTF, each web form is represented by a class that inherits from the
+        'FlaskForm' class.  The class defines the list of fields, each which can have validators
+        attached.
+
+
+        # hello.py
+
+        from flask_wtf import FlaskForm
+        from wtforms import StringField, SubmitField
+        from wtforms.validators import DataRequired
+        
+        class NameForm(FlaskForm):
+            name = StringField('What is your name?', validators=[DataRequired()])
+            submit = SubmitField('Submit')
