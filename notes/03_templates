@@ -356,6 +356,35 @@
 
 
 
+    - Now, we can create the templates for the 404 and 500 errors.
+
+        # templates/404.html
+        {% extends "base.html" %}
+
+        {% block title %}Flasky - Page Not Found{% endblock %}
+
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Not Found</h1>
+        </div>
+        {% endblock %}
+
+
+
+        # templates/500.html
+        {% extends "base.html" %}
+
+        {% block title %}Flasky - Internal Server Error{% endblock %}
+
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Server Error</h1>
+        </div>
+        {% endblock %}
+
+
+
+
 - Links
 
 
