@@ -36,3 +36,78 @@
         @app.routet('/user/<name>')
         def user(name):
             return render_template('user.html', name=name)
+
+
+    - By default, Flask looks for templates in a 'templates' subdirectory of the main 
+        application directory.  
+
+
+
+- Variables
+
+    - Jinja2 recognizes variables of any type, including complex types like lists, 
+        dictionaries, and objects.
+
+        <p>A value from a dictionary: {{ mydict['key'] }}.</p>
+        <p>A value from a list: {{ mylist[3] }}.</p>
+        <p>A value from a list, with a variable index: {{ mylist[myintvar] }}.</p>
+        <p>A value from an object's method: {{ myobj.somemethod() }}.</p>
+
+
+    - Variables can be modified with filters, which are added after the variable name with
+        a pipe as a separator.
+
+        Hello, {{ name | capitalize }}
+
+
+    - Here are some commonly used filters:
+
+        Filter name         Description
+        --------------------------------------------------------------------------
+        safe                Renders the value without applying escaping
+
+        capitalize          Converts the first character of the value to uppercase and the 
+                              rest to lowercase
+
+        lower               Converts the value to lowercase characters
+
+        upper               Converts the value to uppercase characters
+
+        title               Capitalizes each word in the value
+
+        trim                Removes leading and trailing whitespace from the value
+
+        striptags           Removes any HTML tags from the value before rendering
+
+
+
+    - Note that the 'safe' filter is important to highlight.  By default, Jinja2 escapes all
+        variables for security purposes.  
+
+      For example, if you set a variable to:
+        '<h1>Hello</h1>'
+
+      It will get rendered as:
+        '&lt;h1&gt;Hello&lt;/h1&gt;'
+
+      The 'safe' filter allows you to render the text the way it appears in the code, but you
+        must be very careful and not use untrusted values like user input.
+
+
+
+- Control Structures
+
+
+- Bootstrap Integration with Flask-Bootstrap
+
+
+- Custom Error Pages
+
+
+- Links
+
+
+- Static Files
+
+
+- Localization with Dates and Times with Flask-Moment
