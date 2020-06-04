@@ -4,8 +4,10 @@ from flask_moment import Moment
 from datetime import datetime
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'hardcoded-secret-key-for-dev'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+
 
 @app.route('/')
 def index():

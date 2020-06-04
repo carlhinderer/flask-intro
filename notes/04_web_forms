@@ -1,0 +1,52 @@
+-----------------------------------------------------------------------
+|  CHAPTER 4 - WEB FORMS                                              |
+-----------------------------------------------------------------------
+
+- Web Forms
+
+    - The Flask request object exposes all the information sent by a client in a request.  For
+        POST requests containing form data, the infomation is accessed in 'request.form'.
+
+
+    - Although the support provided in Flask's request object is sufficient for the handling
+        of web forms, there are a number of tasks that can become tedious and repetitive, such
+        as generating HTML and validation.
+
+      The 'Flask-WTF' extension makes working with forms easier.  It is a wrapper around the
+        framework-agnostic 'WTForms' package.
+
+
+        # Install flask-wtf
+        $ pip install flask-wtf
+
+
+
+- Configuration
+
+    - Flask-WTF does not need to be initialized at the application level, but it expects the
+        application to have a secret key configured.  This is used to protect the contents of
+        the user session against tampering.  
+
+      It should be unique for each application, and should not be known by anyone.
+
+
+    - To configure a secret key for a Flask application:
+
+        app = Flask(__name__)
+        app.config['SECRET_KEY'] = 'hard to guess string'
+
+
+    - The 'app.config' dictionary is a general-purpose place to store config variables used by
+        Flask, extensions, or the application itself.  
+
+      For added security, the secret key should be stored in an environment variable in 
+        production scenarios. 
+
+
+    - Flask-WTF requires a secret key to be configured, becuase this key is part of the 
+        mechanism used to protect all forms against CSRF attacks.  A CSRF attack occurs when a 
+        malicious website sends requests to the application server on which the user is
+        currently logged in.
+
+      Flask-WTF generates security tokens for all forms and stores them in the user session,
+        which is protected with a cryptographic signature generated from the secret key.
