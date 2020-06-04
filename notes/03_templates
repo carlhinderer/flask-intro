@@ -370,7 +370,6 @@
         {% endblock %}
 
 
-
         # templates/500.html
         {% extends "base.html" %}
 
@@ -384,11 +383,57 @@
 
 
 
-
 - Links
+
+    - Adding URLs in templates can become complicated when they have lots of dynamic parts.
+        The 'url_for()' helper function is used to make this easier by generating URLs based
+        on the URL map.
+
+        # Returns /
+        url_for('index')
+
+        # Returns http://localhost:5000/
+        url_for('index', _external=True)
+
+        # Returns http://localhost:5000/user/john
+        url_for('user', name='john', _external=True)
+
+
+    - Any arguments passed that are not dynamic URL parameters will be added to the query 
+        string.
+
+        # Returns /user/john?page=2&version=1
+        url_for('user', name='john', page=2, version=1)
+
 
 
 - Static Files
+
+    - Most applications include static files such as images, JavaScript files, and CSS 
+        files, which are referenced from the HTML in templates.
+
+      Flask automatically supports static files by adding a special route '/static/<filename>'
+
+        # Returns http://localhost:5000/static/css/styles.css
+        url_for('static', filename='css/styles.css', _external=True)
+
+
+    - By default, Flask looks for static files in a subdirectory called 'static' in the 
+        application's root directory.  Files can be organized into subdirectories if desired.
+
+      Here, we'll add a 'favicon.ico' icon in the base template to be shown in the address
+        bar of browsers.
+
+
+        # templates/base.html
+        {% block head %}
+        {{ super() }}
+        <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}"
+            type="image/x-icon">
+        <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}"
+            type="image/x-icon">
+        {% endblock %}
+
 
 
 - Localization with Dates and Times with Flask-Moment
