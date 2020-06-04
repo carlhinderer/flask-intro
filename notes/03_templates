@@ -95,7 +95,62 @@
 
 
 
-- Control Structures
+- Basic Control Structures
+
+    - Conditionals
+
+        {% if user %}
+            Hello, {{ user }}!
+        {% else %}
+            Hello, Stranger!
+        {% endif %}
+
+
+    - For Loops
+
+        <ul>
+            {% for comment in comments %}
+                <li>{{ comment }}</li>
+            {% endfor %}
+        </ul>
+
+
+
+- Macros
+
+    - Macros serve a purpose similar to functions.
+
+        # Define a macro
+        {% macro render_comment(comment) %}
+            <li>{{ comment }}</li>
+        {% endmacro %}
+        
+
+        # Use the macro
+        <ul>
+            {% for comment in comments %}
+                {{ render_comment(comment) }}
+            {% endfor %}
+        </ul>
+
+
+    - To make macros more usable, they can be stored in standalone files that are then 
+        imported by all the files that need them.  
+
+        {% import 'macros.html' as macros %}
+
+        <ul>
+            {% for comment in comments %}
+                {{ macros.render_comment(comment) }}
+            {% endfor %}
+        </ul>
+
+
+
+- Template Inheritance
+
+    - 
+
 
 
 - Bootstrap Integration with Flask-Bootstrap
