@@ -149,7 +149,48 @@
 
 - Template Inheritance
 
-    - 
+    - First, we create a base template:
+
+        # base.html
+        <html>
+        <head>
+            {% block head %}
+            <title>{% block title %}{% endblock %} - My Application</title>
+            {% endblock %}
+        </head>
+        <body>
+            {% block body %}
+            {% endblock %}
+        </body>
+        </html>
+
+
+    - Base templates define blocks that can be overridden by derived templates.  The Jinja2
+        'block' and 'endblock' directives define blocks of content that are added to the base
+        template.
+
+      Here, there are blocks called 'head', 'title', and 'body'.  Note that 'title' is contained
+        by 'head'.
+
+        # index.html
+        {% extends "base.html" %}
+        {% block title %}Index{% endblock %}
+        {% block head %}
+            {{ super() }}
+            <style>
+            </style>
+        {% endblock %}
+        {% block body %}
+        <h1>Hello, World!</h1>
+        {% endblock %}
+
+
+    - The 'extends' directive declares that this template derives from 'base.html'.
+
+      When a block has some content in both the base and derived templates, the content
+        from the derived template is used.  Within this block, the derived template can
+        call 'super()' to reference the contents of the block in the base template.
+
 
 
 
