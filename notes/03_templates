@@ -301,6 +301,60 @@
 
 - Custom Error Pages
 
+    - Now that we are using Bootstrap, the default 404 and 500 error pages look worse than
+        the rest of our site.  To start fixing that, we create view methods to handle those
+        errors in a customized way.
+
+        @app.errorhandler(404)
+        def page_not_found(e):
+            return render_template('404.html'), 404
+
+        @app.errorhandler(500)
+        def internal_server_error(e):
+            return render_template('500.html'), 500
+
+
+    - Now, we need to add the templates.  They need to have the same layout as the rest of
+        our templates, including the navigation bar and page header.
+
+      We'll use template inheritance for this to avoid duplicated code.  We'll create a new
+        base template and move the navbar into it.  Then, we update the 'index' and 'user'
+        templates to use the new base template.
+
+        # templates/base.html
+        {% extends "bootstrap/base.html" %}
+
+        {% block title %}Flasky{% endblock %}
+        
+        {% block navbar %}
+        <div class="navbar navbar-inverse" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle"
+                     data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/">Flasky</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <li><a href="/">Home</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+        
+        {% block content %}
+        <div class="container">
+            {% block page_content %}{% endblock %}
+        </div>
+        {% endblock %}
+
+
 
 - Links
 
