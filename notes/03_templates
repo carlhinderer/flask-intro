@@ -1,0 +1,38 @@
+-----------------------------------------------------------------------
+|  CHAPTER 3 - TEMPLATES                                              |
+-----------------------------------------------------------------------
+
+- Templates
+
+    - Mixing business and presentation logic leads to web applications that are hard to
+        maintain.  We move the presentation logic into templates to improve maintainability.
+
+      A 'template' is a file that contains the text for the response, with placeholders for
+        dynamic content generated during the handling of the request.  The process of 
+        replacing the placeholders with the dynamic content is called 'rendering'.
+
+      Jinja2 is the rendering engine used by Flask.
+
+
+
+- The Jinja2 Template Engine
+
+    - Simple templates and view methods that return them:
+
+        # templates/index.html
+        <h1>Hello World!</h1>
+
+        # templates/user.html
+        <h1>Hello, {{ name }}!</h1>
+
+
+        # hello.py
+        from flask import Flask, render_template
+
+        @app.route('/')
+        def index():
+            return render_template('index.html')
+
+        @app.routet('/user/<name>')
+        def user(name):
+            return render_template('user.html', name=name)

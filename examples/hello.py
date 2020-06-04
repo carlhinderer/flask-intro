@@ -1,14 +1,14 @@
-from flask import Flask, request, make_response, redirect, abort
+from flask import Flask, abort, make_response, redirect, render_template, request
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return '<h1>Hello World!</h1>'
+    return render_template('index.html')
 
 @app.route('/user/<name>')
 def user(name):
-    return '<h1>Hello, {}!</h1>'.format(name)
+    return render_template('user.html', name=name)
 
 @app.route('/browser')
 def browser():
@@ -30,5 +30,5 @@ def redirect_to_google():
     return redirect('http://www.google.com/')
 
 @app.route('/abort')
-def abort():
+def abort_404():
     abort(404)
