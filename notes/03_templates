@@ -468,8 +468,45 @@
 
 
         # templates/base.html
-        
+
         {% block scripts %}
         {{ super() }}
         {{ moment.include_moment() }}
+        {% endblock %}
+
+
+    - To work with timestamps, Flask-Moment makes a 'moment' object available to templates.  
+        First, we pass the current time to the template:
+
+        # hello.py
+        @app.route('/')
+        def index():
+            return render_template('index.html', current_time=datetime.utcnow())
+
+
+      Then, we render the current time with the user's local settings.
+
+        # templates/index.html
+        <p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
+        <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
+
+
+    - Flask-Moment implements the following methods from Moment.js:
+
+        - format()
+        - fromNow()
+        - fromTime()
+        - calendar()
+        - valueOf()
+        - unix()
+
+
+    - The timestamps rendered by Flask-Moment can be localized to many languages.  A language
+        can be selected by passing the 2-letter language code to the function 'locale()' right
+        after the Moment.js library is included.
+
+        {% block scripts %}
+        {{ super() }}
+        {{ moment.include_moment() }}
+        {{ moment.locale('es') }}
         {% endblock %}
