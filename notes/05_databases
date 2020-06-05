@@ -1,0 +1,38 @@
+-----------------------------------------------------------------------
+|  CHAPTER 5 - DATABASES                                              |
+-----------------------------------------------------------------------
+
+- Database Access with Flask-SQLAlchemy
+
+    - SQLAlchemy is a powerful relational database framework that supports several
+        database backends.  It offers a high-level ORM and low-level access to the database's
+        native SQL functionality.
+
+        $ pip install flask-sqlalchemy
+
+
+    - In Flask-SQLAlchemy, a database is specified as a URL.
+
+        Database engine            URL
+        ---------------------------------------------------------------------
+        MySQL                      mysql://username:password@hostname/database
+
+        Postgres                   postgresql://username:password@hostname/database
+
+        SQLite (Linux, macOS)      sqlite:////absolute/path/to/database
+
+
+    - The URL of the application database must be configured as the key 
+        'SQLALCHEMY_DATABASE_URI' in the Flask config object.  The documentation also recommends
+        setting 'SQLALCHEMY_TRACK_MODIFICATIONS' to False to use less memory unless signals for
+        object changes are needed.
+
+
+        import os
+        from flask_sqlalchemy import SQLAlchemy
+
+        db_url = 'postgresql://flaskexampleuser:flaskexamplepw@localhost/flaskexample'
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        
+        db = SQLAlchemy(app)

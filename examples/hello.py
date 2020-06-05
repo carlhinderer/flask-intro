@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import abort, flash, make_response, redirect, render_template, request, session, url_for
 
+# Initialize Template Extensions
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from datetime import datetime
@@ -9,6 +10,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hardcoded-secret-key-for-dev'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+
+# Initialize Database
+import os
+from flask_sqlalchemy import SQLAlchemy
+
+db_url = 'postgresql://flaskexampleuser:flaskexamplepw@localhost/flaskexample'
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False   
+db = SQLAlchemy(app)
 
 
 from flask_wtf import FlaskForm
