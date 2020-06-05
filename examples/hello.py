@@ -1,4 +1,4 @@
-from flask import Flask, abort, make_response, redirect, render_template, request
+from flask import Flask, abort, make_response, redirect, render_template, request, session, url_for
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from datetime import datetime
@@ -20,16 +20,17 @@ class NameForm(FlaskForm):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    name = None
     form = NameForm()
     if form.validate_on_submit():
-        name = form.name.data
-        form.name.data = ''
-    return render_template('index.html', form=form, name=name, current_time=datetime.utcnow())
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form, name=session.get('name'))
+
 
 @app.route('/user/<name>')
 def user(name):
     return render_template('user.html', name=name)
+
 
 @app.route('/browser')
 def browser():
@@ -53,6 +54,7 @@ def redirect_to_google():
 @app.route('/abort')
 def abort_404():
     abort(404)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
