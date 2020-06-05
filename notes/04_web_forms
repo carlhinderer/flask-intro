@@ -146,3 +146,54 @@
     AnyOf                  Validates that the input is one of a list of possible values
 
     NoneOf                 Validates that the input is none of a list of possible values
+
+
+
+- HTML Rendering of Forms
+
+    - Form fields are callables, that when invoked from a template, render themselves to HTML.
+        Our 'NameForm' instance gets rendered as:
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.name.label }} {{ form.name() }}
+            {{ form.submit() }}
+        </form>
+
+      Note that the 'hidden_tag' is used by Flask-WTF to implement CSRF protection.
+
+
+    - We can give the fields 'id' or 'class' attributes if we want to define CSS styles for them.
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.name.label }} {{ form.name(id='my-text-field') }}
+            {{ form.submit() }}
+        </form>
+
+
+    - The easiest way to get decent looking forms is to just use the Bootstrap defaults.  The
+        Flask-Bootstrap extension has a high-level helper function that renders an entire Flask-WTF
+        form using Bootstrap's predefined form styles.
+
+      To render the entire form:
+
+        {% import "bootstrap/wtf.html" as wtf %}
+        {{ wtf.quick_form(form) }}
+
+
+    - Here is the complete template:
+
+        # templates/index.html
+
+        {% extends "base.html" %}
+        {% import "bootstrap/wtf.html" as wtf %}
+        
+        {% block title %}Flasky{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+        </div>
+        {{ wtf.quick_form(form) }}
+        {% endblock %}
