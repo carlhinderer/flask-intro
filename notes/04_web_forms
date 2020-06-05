@@ -258,3 +258,54 @@
 
       Note that session.get will return None if the key is missing instead of throwing an 
         exception.
+
+
+
+- Message Flashing
+
+    - Sometimes it is useful to give the user a status after a request is completed.  This
+        might be a confirmation message, an error, or a warning.
+
+      For instance, the user could receive a warning if their username or password was entered
+        correctly.
+
+
+    - Flask includes this functionality as a core feature.
+
+        from flask import Flask, render_template, session, redirect, url_for, flash
+
+        @app.route('/', methods=['GET', 'POST'])
+        def index():
+            form = NameForm()
+            if form.validate_on_submit():
+                old_name = session.get('name')
+                if old_name is not None and old_name != form.name.data:
+                    flash('Looks like you have changed your name!')
+                session['name'] = form.name.data
+                return redirect(url_for('index'))
+            return render_template('index.html', form = form, name=session.get('name'))
+
+
+    - Now, we need to add the flash messages to our template.  The best place to render them
+        is in the base template, since it will enable them in all pages.
+
+      The Flask 'get_flashed_messages()' method is used to retrieve messages and render them.
+
+        # templates/base.html
+
+        {% block content %}
+        <div class="container">
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+            {% endfor %}
+        
+            {% block page_content %}{% endblock %}
+        </div>
+        {% endblock %}
+
+
+    - Note that flash messages are used once and discarded, so they will not be returned the
+        next time the function is called.
