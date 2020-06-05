@@ -1,6 +1,7 @@
 from flask import Flask
 from flask import abort, flash, make_response, redirect, render_template, request, session, url_for
 
+
 # Initialize Template Extensions
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
@@ -10,6 +11,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'hardcoded-secret-key-for-dev'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+
 
 # Initialize Database
 import os
@@ -21,6 +23,26 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
+# Model Definitions
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
+# Form Definitions
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -30,6 +52,7 @@ class NameForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+# View Methods
 @app.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
