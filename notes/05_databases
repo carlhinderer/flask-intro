@@ -68,3 +68,70 @@
 
       The poplular convention is to pluralize the table names, so we typically want to name them
         manually to do that.
+
+
+    - Implementing the '__repr__' method isn't strictly necessary, but it is helpful for debugging
+        purposes.
+
+
+    - All Flask-SQLAlchemy models are required to have a primary key column, usually named 'id'.
+
+
+
+- List of Commonly Used SQLAlchemy Column Types
+
+    Type name         Python type           Description
+    ---------------------------------------------------------------------------------
+    Integer           int                   Regular integer, typically 32 bits
+
+    SmallInteger      int                   Short-range integer, typically 16 bits
+
+    BigInteger        int or long           Unlimited precision integer
+
+    Float             float                 Floating-point number
+
+    Numeric           decimal.Decimal       Fixed-point number
+
+    String            str                   Variable-length string
+
+    Text              str                   Variable-length string, optimized for large or unbounded 
+                                              length
+
+    Unicode           unicode               Variable-length Unicode string
+
+    UnicodeText       unicode               Variable-length Unicode string, optimized for large or 
+                                              unbounded length
+
+    Boolean           bool                  Boolean value
+
+    Date              datetime.date         Date value
+
+    Time              datetime.time         Time value
+
+    DateTime          datetime.datetime     Date and time value
+
+    Interval          datetime.timedelta    Time interval
+
+    Enum              str                   List of string values
+
+    PickleType        Any Python object     Automatic Pickle serialization
+
+    LargeBinary       str                   Binary blob
+
+
+
+- Common SQLAlchemy Column Options
+
+    Option name      Description
+    ----------------------------------------------------------------------------
+    primary_key      If set to True, the column is the table’s primary key.
+
+    unique           If set to True, do not allow duplicate values for this column.
+
+    index            If set to True, create an index for this column, so that queries are 
+                       more efficient.
+
+    nullable         If set to True, allow empty values for this column. If set to False, 
+                       the column will not allow null values.
+
+    default          Define a default value for the column.
