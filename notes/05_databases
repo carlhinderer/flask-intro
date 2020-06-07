@@ -415,3 +415,31 @@
         $ flask shell
         >>> db
         >>> User
+
+
+
+- Database Migrations with Flask-Migrate
+
+    - The developer of SQLAlchemy has also written a migration framework called Alembic.
+        Instead of using Alembic directly, Flask applications can also use the 'Flask-Migrate'
+        extension, a lightweight Alembic wrapper that integrates the with 'flask' command.
+
+
+    - To create a migration repository:
+
+        1. Add Flask-Migrate to virtual environment
+
+             $ pip install flask-migrate
+
+
+        2. Initialize the extension
+
+             # hello.py
+
+             from flask_migrate import Migrate
+             migrate = Migrate(app)
+
+
+        3. Create the migrations directory.
+
+            $ flask db init

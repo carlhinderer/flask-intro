@@ -23,6 +23,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
+# Initialize Alembic Migrations
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
+
+
 # Model Definitions
 class Role(db.Model):
     __tablename__ = 'roles'
