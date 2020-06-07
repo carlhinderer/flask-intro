@@ -457,4 +457,13 @@
 
     - To create an automatic migration script:
 
-        
+        $ flask db migrate -m "Initial migration"
+
+
+
+- Upgrading the Database
+
+    - Once the migration script has been reviewed and accepted, it can be applied to the
+        database.
+
+        $ flask db upgrade
