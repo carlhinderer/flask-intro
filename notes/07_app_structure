@@ -1,0 +1,57 @@
+-----------------------------------------------------------------------
+|  CHAPTER 7 - LARGE APPLICATION STRUCTURE                            |
+-----------------------------------------------------------------------
+
+- Project Structure
+
+    - Unlike most other web frameworks, Flask does not impose a specific organization on 
+        large projects.  The structure is left entirely to the developer.  
+
+
+    - In this book, we'll suggest one possible way to organize a large application.  Here
+        is the basic layout we will use.
+
+        |-flasky
+          |-app/
+            |-templates/
+            |-static/
+            |-main/
+              |-__init__.py
+              |-errors.py
+              |-forms.py
+              |-views.py
+            |-__init__.py
+            |-email.py
+            |-models.py
+          |-migrations/
+          |-tests/
+            |-__init__.py
+            |-test*.py
+          |-venv/
+          |-requirements.txt
+          |-config.py
+          |-flasky.py
+
+
+    - There are 4 top-level folders:
+
+        1. The Flask application lives inside a folder named 'app'.
+
+        2. The 'migrations' folder contains the database scripts.
+
+        3. Unit tests are written in a 'tests' package.
+
+        4. The 'venv' folder contains the Python virtual environment.
+
+
+    - There are also a few new files:
+
+        'requirements.txt'
+           Lists the package dependencies
+
+        'config.py'
+           Stores the configuration settings
+
+        'flasky.py'
+           Defines the Flask application instance and includes a few tasks to help manage 
+             the application
