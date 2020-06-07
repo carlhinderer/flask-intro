@@ -185,3 +185,169 @@
 
     secondaryjoin      Specify the secondary join condition for many-to-many relationships when 
                          SQLAlchemy cannot determine it on its own.
+
+
+
+- Create, Update, and Delete Operations
+
+    - Creating the Tables
+
+        # Start flask shell
+        $ flask shell
+
+        # Create the tables that correspond to the models
+        >>> from hello import db
+        >>> db.create_all()
+        
+        # Drop all the created tables
+        >>> db.drop_all()
+
+
+    - Inserting Rows
+
+        # Create a few roles and users
+        >>> from hello import Role, User
+        >>> admin_role = Role(name='Admin')
+        >>> mod_role = Role(name='Moderator')
+        >>> user_role = Role(name='User')
+        >>> user_john = User(username='john', role=admin_role)
+        >>> user_susan = User(username='susan', role=user_role)
+        >>> user_david = User(username='david', role=user_role)
+
+        # Add changes to the session
+        >>> db.session.add(admin_role)
+        >>> db.session.add(mod_role)
+        >>> db.session.add(user_role)
+        >>> db.session.add(user_john)
+        >>> db.session.add(user_susan)
+        >>> db.session.add(user_david)
+
+        # More concise way to add to session
+        >>> db.session.add_all([admin_role, mod_role, user_role, user_john, 
+                                user_susan, user_david])
+
+        # Persist database session
+        >>> db.session.commit()
+
+
+    - Modifying Rows
+
+        # The 'add' method can be used to update models
+        >>> admin_role.name = 'Administrator'
+        >>> db.session.add(admin_role)
+        >>> db.session.commit()
+
+
+    - Deleting Rows
+
+        # Delete the 'Moderator' role
+        >>> db.session.delete(mod_role)
+        >>> db.session.commit()
+
+
+
+- Querying Rows
+
+    - Flask-SQLAlchemy makes a 'query' object available for each model class.  The 'all'
+        method will return the entire contents of the table.
+
+        # Return all rows
+        >>> Role.query.all()
+        [<Role 'Administrator'>, <Role 'User'>]
+
+        >>> User.query.all()
+        [<User 'john'>, <User 'susan'>, <User 'david'>]
+
+
+    - To filter the results:
+
+        # Filter query results
+        >>> User.query.filter_by(role=user_role).all()
+
+        # View the SQL query being run
+        >>> str(User.query.filter_by(role=user_role))
+
+        # The first() method can be used to return the first element instead of an array
+        >>> user_role = Role.query.filter_by(name='User').first()
+
+
+
+- Query Filters
+
+    Option            Description
+    ----------------------------------------------------------------------------------
+    filter()          Returns a new query that adds an additional filter to the original query
+
+    filter_by()       Returns a new query that adds an additional equality filter to the original 
+                        query
+
+    limit()           Returns a new query that limits the number of results of the original query 
+                        to the given number
+
+    offset()          Returns a new query that applies an offset into the list of results of the 
+                        original query
+
+    order_by()        Returns a new query that sorts the results of the original query according 
+                        to the given criteria
+
+    group_by()        Returns a new query that groups the results of the original query according 
+                        to the given criteria
+
+
+
+- Query Executors
+
+    Option            Description
+    ----------------------------------------------------------------------------------
+    all()             Returns all the results of a query as a list
+
+    first()           Returns the first result of a query, or None if there are no results
+
+    first_or_404()    Returns the first result of a query, or aborts the request and sends a 
+                        404 error as the response if there are no results
+
+    get()             Returns the row that matches the given primary key, or None if no matching 
+                        row is found
+
+    get_or_404()      Returns the row that matches the given primary key or, if the key is not 
+                        found, aborts the request and sends a 404 error as the response
+
+    count()           Returns the result count of the query
+
+    paginate()        Returns a Pagination object that contains the specified range of results
+
+
+
+- Querying Relationships
+
+    - Here is an example of querying a 1:1 relationship from both sides:
+
+       >>> users = user_role.users
+       >>> users
+       [<User 'susan'>, <User 'david'>]
+
+       >>> users[0].role
+       <Role 'User'>
+
+
+    - There is one small problem with this approach.  The implicit query that runs when
+        'user_role.users' is called calls 'all()', so it's not possible to use additional
+        query filters.
+
+      To fix this, we'll use the 'lazy' option on the relationship so that the query is not
+        automatically executed.
+
+        class Role(db.Model):
+            # ...
+            users = db.relationship('User', backref='role', lazy='dynamic')
+            # ...
+
+
+      Now, 'user_role.users' returns a query that hasn't executed yet, so filters can be added
+        to it.
+
+        >>> user_role.users.order_by(User.username).all()
+        [<User 'david'>, <User 'susan'>]
+        
+        >>> user_role.users.count()
+        2
