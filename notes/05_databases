@@ -443,3 +443,18 @@
         3. Create the migrations directory.
 
             $ flask db init
+
+
+
+- Creating a Migration Script
+
+    - In Alembic, a database migration script has 2 functions, 'upgrade()' and 'downgrade()',
+        which apply the changes and remove them.
+
+      Alembic migration can be created manually or automatically using the 'revision' and 
+        'migrate' commands.  
+
+
+    - To create an automatic migration script:
+
+        
