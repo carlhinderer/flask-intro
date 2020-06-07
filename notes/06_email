@@ -76,8 +76,64 @@
 
 - Sending Emails from the Python Shell
 
+    - To test our configuration, we can start a shell session and send a test email.
+
+        >>> from flask_mail import Message
+        >>> from hello import mail
+
+        >>> msg = Message('test email', sender='you@example.com', recipients=['you@example.com'])
+        >>> msg.body = 'This is the plain text body'
+        >>> msg.html = 'This is the <b>HTML</b> body'
+
+        >>> with app.app_context():
+                mail.send(msg)
+
+
 
 - Integrating Emails with the Application
 
+    - Here, we create an email from our application:
+
+        # hello.py
+
+        from flask_mail import Message
+
+        app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+        app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <flasky@example.com>'
+        
+        def send_email(to, subject, template, **kwargs):
+            msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
+                          sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+            msg.body = render_template(template + '.txt', **kwargs)
+            msg.html = render_template(template + '.html', **kwargs)
+            mail.send(msg)
+
+
+    - Then, we can send the email from our 'index()' view method.
+
+        # Send mail 
+        if app.config['FLASKY_ADMIN']:
+            send_email(app.config['FLASKY_ADMIN'], 'New User', 'mail/new_user', user=user)
+
+
 
 - Sending Asynchronous Email
+
+    - Since sending an email tends to take a few seconds, we don't want to block the rest
+        of the request handling waiting for it.  To avoid this, we'll move it to a background
+        thread.
+
+        from threading import Thread
+
+        def send_async_email(app, msg):
+            with app.app_context():
+                mail.send(msg)
+        
+        def send_email(to, subject, template, **kwargs):
+            msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + subject,
+                          sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+            msg.body = render_template(template + '.txt', **kwargs)
+            msg.html = render_template(template + '.html', **kwargs)
+            thr = Thread(target=send_async_email, args=[app, msg])
+            thr.start()
+            return thr
