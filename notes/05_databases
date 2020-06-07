@@ -397,3 +397,21 @@
         </div>
         {{ wtf.quick_form(form) }}
         {% endblock %}
+
+
+
+- Integrating with the Flask Shell
+
+    - It can be tedious to import the database and models each time the shell is started.
+        To automatically import these objects, we can create a shell context processor.
+
+        # Add shell context processor to hello.py
+        @app.shell_context_processor
+        def make_shell_context():
+            return dict(db=db, User=User, Role=Role)
+
+
+        # Now, can start the shell and access the db and models
+        $ flask shell
+        >>> db
+        >>> User
