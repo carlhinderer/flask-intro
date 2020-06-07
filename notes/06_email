@@ -1,0 +1,83 @@
+-----------------------------------------------------------------------
+|  CHAPTER 6 - EMAIL                                                  |
+-----------------------------------------------------------------------
+
+- The Flask-Mail Extension
+
+    - The 'smtplib' package from the Python standard library can be used to send email inside
+        a Flask application.
+
+      The 'Flask-Mail' wraps smtplib and integrates it nicely with Flask.
+
+        $ pip install flask-mail
+
+
+    - The extension connects to a SMTP (Simple Mail Transfer Protocol) and passes emails to it
+        for delivery.  If no configuration is given, it connects to localhost on port 25 and 
+        sends email without authentication.
+
+      Here is the list of config keys that can be specified.
+
+
+        Key             Default              Description
+        ---------------------------------------------------------------------------------
+        MAIL_SERVER     localhost            Hostname or IP address of the email server
+
+        MAIL_PORT       25                   Port of the email server
+
+        MAIL_USE_TLS    False                Enable Transport Layer Security (TLS) security
+
+        MAIL_USE_SSL    False                Enable Secure Sockets Layer (SSL) security
+
+        MAIL_USERNAME   None                 Mail account username
+
+        MAIL_PASSWORD   None                 Mail account password
+
+
+
+- Connecting to a Gmail Account
+
+    - During development, it may be convenient to connect to an external SMTP server.
+
+        # Flask-Mail config for Gmail
+        import os
+
+        app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+        app.config['MAIL_PORT'] = 587
+        app.config['MAIL_USE_TLS'] = True
+        app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+        app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+
+
+    - Note that for security reasons, Gmail accounts are configured to require external
+        applications to use OAuth2 to connect to the email server.
+
+      Unfortunately, smtplib does not support this method of authentication.  To make this
+        work, you have to go the Gmail account settings and click 'Allow less secure apps'.
+        
+
+
+- Initializing Flask-Mail
+
+    - To initialize Flask-Mail in the application:
+
+        # hello.py
+
+        from flask_mail import Mail
+        mail = Mail(app)
+
+
+    - There must be 2 environment variables present to hold the email username and password.
+
+        $ export MAIL_USERNAME=<Gmail username>
+        $ export MAIL_PASSWORD=<Gmail password>
+
+
+
+- Sending Emails from the Python Shell
+
+
+- Integrating Emails with the Application
+
+
+- Sending Asynchronous Email
