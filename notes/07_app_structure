@@ -219,6 +219,8 @@
 
     - And we can register the routes and view methods the same way.
 
+        # app/main/views.py
+
         from datetime import datetime
         from flask import render_template, session, redirect, url_for
         from . import main
@@ -244,13 +246,53 @@
         2. We have to use relative paths with 'url_for', ie url_for(main.index) or url_for(.index)
 
 
-    - Finally, we'll put the form classes in the 'app/main/forms.py' module.
+    - Finally, we'll put the form classes in the 'app/main/forms.py' module.  
 
 
 
 - Application Script
 
+    - The 'flasky.py' module in the top-level directory is where the application instance is
+        defined.  
+
+        # flasky.py
+
+        import os
+        from app import create_app, db
+        from app.models import User, Role
+        from flask_migrate import Migrate
+        
+        app = create_app(os.getenv('FLASK_CONFIG') or 'default')
+        migrate = Migrate(app, db)
+        
+        @app.shell_context_processor
+        def make_shell_context():
+            return dict(db=db, User=User, Role=Role)
+
+
+    - We also need to set the environment variables.
+
+        $ export FLASK_APP=flasky.py
+        $ export FLASK_DEBUG=1
+
+
+
 - Requirements File
+
+    - It is a good practice to include a 'requirements.txt' file that records all the package
+        dependencies with the exact version numbers.  It's also a good idea to update the file
+        any time a new package is added.
+
+        # Create requirements file
+        $ pip freeze > requirements.txt
+
+
+    - To rebuild the environment in a new virtual environment.
+
+        # Install packages
+        $ pip install -r requirements.txt
+
+
 
 - Unit Tests
 
