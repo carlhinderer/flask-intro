@@ -347,6 +347,10 @@
 
 
 
-- Database Setup
+- Database Setup and Running the Application
 
-- Running the Application
+    # Create the tables
+    $ flask db upgrade
+
+    # Run the application
+    $ flask run
