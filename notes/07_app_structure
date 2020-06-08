@@ -153,6 +153,101 @@
           return app
 
 
+
+- Implementing Application Functionality in a Blueprint
+
+    - The conversion to an application factory introduces a complication for routes.  In 
+        single-script applications, the application instance exists in the global scope, so routes
+        can easily be created using the 'app.route' and 'app.errorhandler' decorators.
+
+      The problem is that the decorators only exist after 'create_app()' is invoked, which is too
+        late.
+
+
+    - Luckily, Flask offers a better solution using 'blueprints'.  A blueprint is similar to an 
+        application, it that it can also define routes and error handlers.  
+
+      The difference is that when these are defined in a blueprint, they are in a dormant state until 
+        the blueprint is registered within an application.
+
+
+    - Here is our package constructor, which creates the blueprint.
+
+        # app/main/__init__.py
+
+        from flask import Blueprint
+        main = Blueprint('main', __name__)
+        from . import views, errors
+
+
+    - The routes of the application are stored in an 'app/main/views.py' module inside the 
+        package, and the error handlers are stored in 'app/main/errors.py'.  Importing these
+        modules causes the routes and error handlers to be associated with the blueprint.
+
+      They are imported at the bottom of 'app/main/__init__.py' to avoid errors due to circular
+        dependencies.  
+
+
+    - We register the blueprint with the application inside of the 'create_app()' factory function.
+
+        # app/__init__.py
+
+        def create_app(config_name):
+            # ...
+        
+            from .main import main as main_blueprint
+            app.register_blueprint(main_blueprint)
+        
+            return app
+
+
+    - Now, we can register the error handlers in the main blueprint using relative imports.
+
+        # app/main/errors.py
+
+        from flask import render_template
+        from . import main
+        
+        @main.app_errorhandler(404)
+        def page_not_found(e):
+            return render_template('404.html'), 404
+        
+        @main.app_errorhandler(500)
+        def internal_server_error(e):
+            return render_template('500.html'), 500
+
+
+    - And we can register the routes and view methods the same way.
+
+        from datetime import datetime
+        from flask import render_template, session, redirect, url_for
+        from . import main
+        from .forms import NameForm
+        from .. import db
+        from ..models import User
+        
+        @main.route('/', methods=['GET', 'POST'])
+        def index():
+            form = NameForm()
+            if form.validate_on_submit():
+                # ...
+                return redirect(url_for('.index'))
+            return render_template('index.html',
+                                   form=form, name=session.get('name'),
+                                   known=session.get('known', False),
+                                   current_time=datetime.utcnow())
+
+
+      Note that there are 2 main differences:
+
+        1. We use '@main.route' instead of '@app.route' to reference the blueprint
+        2. We have to use relative paths with 'url_for', ie url_for(main.index) or url_for(.index)
+
+
+    - Finally, we'll put the form classes in the 'app/main/forms.py' module.
+
+
+
 - Application Script
 
 - Requirements File
