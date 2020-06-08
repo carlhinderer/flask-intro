@@ -55,3 +55,110 @@
         'flasky.py'
            Defines the Flask application instance and includes a few tasks to help manage 
              the application
+
+
+
+- Configuration Options
+
+    - Applications often need several config sets.  The best example of this is needing 
+        different databases during development, testing, and production.
+
+      Instead of the dictionary-like 'app.config' we used before, we can create a hierarchy
+        of configuration classes.
+
+
+    - Here are all the settings we have used so far extracted into a 'config.py' file.
+
+
+        # config.py
+
+        import os
+        basedir = os.path.abspath(os.path.dirname(__file__))
+        
+        class Config:
+            SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'
+            MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
+            MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+            MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in \
+                ['true', 'on', '1']
+            MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+            MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+            FLASKY_MAIL_SUBJECT_PREFIX = '[Flasky]'
+            FLASKY_MAIL_SENDER = 'Flasky Admin <flasky@example.com>'
+            FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
+            SQLALCHEMY_TRACK_MODIFICATIONS = False
+        
+            @staticmethod
+            def init_app(app):
+                pass
+        
+        class DevelopmentConfig(Config):
+            DEBUG = True
+            SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
+                'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
+        
+        class TestingConfig(Config):
+            TESTING = True
+            SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
+                'sqlite://'
+        
+        class ProductionConfig(Config):
+            SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+                'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+        
+        config = {
+            'development': DevelopmentConfig,
+            'testing': TestingConfig,
+            'production': ProductionConfig,
+        
+            'default': DevelopmentConfig
+        }
+
+
+
+- The Application Package
+
+    - The application package is where all the application code, templates, and static files
+        live.  
+
+      We can use a factory function to create the configuration.
+
+
+      # app/__init__.py
+
+      from flask import Flask, render_template
+      from flask_bootstrap import Bootstrap
+      from flask_mail import Mail
+      from flask_moment import Moment
+      from flask_sqlalchemy import SQLAlchemy
+      from config import config
+      
+      bootstrap = Bootstrap()
+      mail = Mail()
+      moment = Moment()
+      db = SQLAlchemy()
+      
+      def create_app(config_name):
+          app = Flask(__name__)
+          app.config.from_object(config[config_name])
+          config[config_name].init_app(app)
+      
+          bootstrap.init_app(app)
+          mail.init_app(app)
+          moment.init_app(app)
+          db.init_app(app)
+      
+          # attach routes and custom error pages here
+      
+          return app
+
+
+- Application Script
+
+- Requirements File
+
+- Unit Tests
+
+- Database Setup
+
+- Running the Application
