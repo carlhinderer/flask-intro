@@ -50,3 +50,63 @@
         
             def verify_password(self, password):
                 return check_password_hash(self.password_hash, password)
+
+
+    - We can test the password hashing in the shell.
+
+        >>> u = User()
+        >>> u.password = 'cat'
+
+        >>> u.password
+        AttributeError: password is not a readable attribute
+
+        >>> u.password_hash
+        'pbkdf2:sha256:50000$moHwFH1B$ef1574909f9c549285e8547cad181c5e0213cfa44a4aba4349
+        fa830aa1fd227f'
+
+        >>> u.verify_password('cat')
+        True
+        >>> u.verify_password('dog')
+        exit
+        False
+
+
+
+- Creating an Authentication Blueprint
+
+    - Blueprints were used in Chapter 7 to define routes in the global scope after the creation
+        of the application was moved into a factory function.  In this section, we'll add the
+        routes related to the user authentication subsystem into a second blueprint called 'auth'.
+
+      The 'auth' blueprint will be hosted in a Python package with the same name.  
+
+
+        # app/auth/__init__.py
+        from flask import Blueprint
+
+        auth = Blueprint('auth', __name__)
+
+        from . import views
+
+
+    - Here, we define the route.
+
+
+        # app/auth/views.py
+        from flask import render_template
+        from . import auth
+
+        @auth.route('/login')
+        def login():
+            return render_template('auth/login.html')
+
+
+    - Also, we need to add the auth blueprint to the 'create_app()' factory function.
+
+
+        def create_app(config_name):
+            # ...
+            from .auth import auth as auth_blueprint
+            app.register_blueprint(auth_blueprint, url_prefix='/auth')
+        
+            return app
