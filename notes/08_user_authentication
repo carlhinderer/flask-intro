@@ -1,0 +1,52 @@
+-----------------------------------------------------------------------
+|  CHAPTER 8 - USER AUTHENTICATION                                    |
+-----------------------------------------------------------------------
+
+- There are many excellent Python authentication packages, but none of them do everything.
+    Here, we'll use several packages and provide the glue that holds them together.
+
+  Authentication Packages:
+
+    1. Flask-Login
+         Management of user sessions for logged-in users
+
+    2. Werkzeug
+         Password hashing and verification
+
+    3. itsdangerous
+         Cryptographically secure token generation and verification
+
+
+
+- Hashing Passwords with Werkzeug
+
+    - Werzkeug's 'security' module conveniently implements secure password hashing.  It's
+        functionality is exposed with 2 simple functions.
+
+
+        # Takes in plain-text password and returns the password hash
+        generate_password_hash(password, method='pbkdf2:sha256', salt_length=8)
+
+        # Takes in password and hash, and returns True if they are the same
+        check_password_hash(hash, password)
+
+
+    - We'll update the 'User' model to accomodate password hashing.
+
+
+        from werkzeug.security import generate_password_hash, check_password_hash
+
+        class User(db.Model):
+            # ...
+            password_hash = db.Column(db.String(128))
+        
+            @property
+            def password(self):
+                raise AttributeError('password is not a readable attribute')
+        
+            @password.setter
+            def password(self, password):
+                self.password_hash = generate_password_hash(password)
+        
+            def verify_password(self, password):
+                return check_password_hash(self.password_hash, password)
