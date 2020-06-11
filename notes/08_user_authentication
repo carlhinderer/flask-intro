@@ -184,3 +184,85 @@
         @login_manager.user_loader
         def load_user(user_id):
             return User.query.get(int(user_id))
+
+
+
+- Protecting Routes
+
+    - To protect a route so that it can only by accessed by authenticated users, Flask-Login
+        provides a 'login_required' decorator.
+
+      Here is an example:
+
+
+        from flask_login import login_required
+
+        @app.route('/secret')
+        @login_required
+        def secret():
+            return 'Only authenticated users are allowed!'
+
+
+    - If the route is accessed by a user that is not authenticated, Flask-Login will redirect
+        the user to the login page.
+
+
+
+- Adding a Login Form
+
+    - Well add a login form:
+
+        # app/auth/forms.py
+        from flask_wtf import FlaskForm
+        from wtforms import StringField, PasswordField, BooleanField, SubmitField
+        from wtforms.validators import DataRequired, Length, Email
+        
+        class LoginForm(FlaskForm):
+            email = StringField('Email', validators=[DataRequired(), Length(1, 64),
+                                                     Email()])
+            password = PasswordField('Password', validators=[DataRequired()])
+            remember_me = BooleanField('Keep me logged in')
+            submit = SubmitField('Log In')
+
+
+    - And we'll add 'Log In' and 'Log Out' links depending on the logged-in state of the
+        state of the current user.  The links are located in the navbar.
+
+        # app/templates/base.html
+
+        ...
+        <ul class="nav navbar-nav navbar-right">
+            {% if current_user.is_authenticated %}
+            <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+            {% else %}
+            <li><a href="{{ url_for('auth.login') }}">Log In</a></li>
+            {% endif %}
+        </ul>
+
+
+
+- Signing Users In
+
+    - Now, we can implement the 'login()' view function.
+
+        # app/auth/views.py
+        
+        from flask import render_template, redirect, request, url_for, flash
+        from flask_login import login_user
+        from . import auth
+        from ..models import User
+        from .forms import LoginForm
+        
+        @auth.route('/login', methods=['GET', 'POST'])
+        def login():
+            form = LoginForm()
+            if form.validate_on_submit():
+                user = User.query.filter_by(email=form.email.data).first()
+                if user is not None and user.verify_password(form.password.data):
+                    login_user(user, form.remember_me.data)
+                    next = request.args.get('next')
+                    if next is None or not next.startswith('/'):
+                        next = url_for('main.index')
+                    return redirect(next)
+                flash('Invalid username or password.')
+            return render_template('auth/login.html', form=form)
