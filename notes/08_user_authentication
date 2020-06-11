@@ -110,3 +110,77 @@
             app.register_blueprint(auth_blueprint, url_prefix='/auth')
         
             return app
+
+
+
+- User Authentication for Flask-Login
+
+    - Flask-Login is an extension that keeps track of whether users are loggin in.  It can be
+        used with any authentication system.
+
+        $ pip install flask-login
+
+
+
+- Preparing the User Model for Logins
+
+    - Flask-Login requires these properties on the 'User' model.
+
+        Property/method         Description
+        ---------------------------------------------------------------------------------
+        is_authenticated        Must be True if the user has valid login credentials or False 
+                                  otherwise.
+
+        is_active               Must be True if the user is allowed to log in or False otherwise. 
+                                  A False value can be used for disabled accounts.
+
+        is_anonymous            Must always be False for regular users and True for a special 
+                                  user object that represents anonymous users.
+
+        get_id()               Must return a unique identifier for the user, encoded as a Unicode 
+                                  string.
+
+
+    - We could directly implement these properties and method in the class, but the Flask-Login
+        package includes a 'UserMixin' that has default implementations appropriate for most
+        cases.  We also add an email address.
+
+
+        # app/models.py
+
+        from flask_login import UserMixin
+
+        class User(UserMixin, db.Model):
+            ...
+            email = db.Column(db.String(64), unique=True, index=True)
+
+
+    - Flask-Login is initialiazed in the application factory function.
+
+
+        # app/__init__.py
+
+        from flask_login import LoginManager
+
+        # Sets the endpoint for the login page
+        # This will automatically redirect anonymous users when they try to access
+        #   protected resources.
+        login_manager = LoginManager()
+        login_manager.login_view = 'auth.login'
+
+        def create_app(config_name):
+            # ...
+            login_manager.init_app(app)
+            # ...
+
+
+    - Finally, we need to designate a function that will be used to load a user from the 
+        database given its identifier.
+
+        # app/models.py
+
+        from . import login_manager
+
+        @login_manager.user_loader
+        def load_user(user_id):
+            return User.query.get(int(user_id))
