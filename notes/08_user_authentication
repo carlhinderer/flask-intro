@@ -246,7 +246,7 @@
     - Now, we can implement the 'login()' view function.
 
         # app/auth/views.py
-        
+
         from flask import render_template, redirect, request, url_for, flash
         from flask_login import login_user
         from . import auth
@@ -266,3 +266,41 @@
                     return redirect(next)
                 flash('Invalid username or password.')
             return render_template('auth/login.html', form=form)
+
+
+    - The 'remember_me' argument sets whether the user should stay logged in after the browser 
+        is closed.
+
+      If the value is False, the user session expires when the browser window is closed, so the
+        user will have to log in again each time.
+
+      If the value is True, a long-term cookie will be set in the user's browser, which Flask-Login
+        uses to restore the user session.  The optional REMEMBER_COOKIE_DURATION configuration 
+        option can be used to change the default one-year duration for the remember cookie.
+
+
+    - If the login was triggered by a user trying to access a protected resource, Flask-Login will
+        have saved that original URL in the 'next' query string argument, which can be accessed
+        from the 'request.args' dictionary.  Then we can redirect them to the intended page.
+
+      If there isn't any value for 'next', we redirect the user to the home page.  For safety 
+        reasons, we check that it starts with '/' before redirecting to it.
+
+
+    - Finally, we'll create the template for the login form.
+
+        # app/templates/auth/login.html
+
+        {% extends "base.html" %}
+        {% import "bootstrap/wtf.html" as wtf %}
+        
+        {% block title %}Flasky - Login{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Login</h1>
+        </div>
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+        {% endblock %}
