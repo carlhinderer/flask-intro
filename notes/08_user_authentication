@@ -340,3 +340,74 @@
             {{ wtf.quick_form(form) }}
         </div>
         {% endblock %}
+
+
+
+- Signing Users Out
+
+    - Here is the implementation of the logout route:
+
+        # app/auth/views.py
+
+        from flask_login import logout_user, login_required
+
+        @auth.route('/logout')
+        @login_required
+        def logout():
+            logout_user()
+            flash('You have been logged out.')
+            return redirect(url_for('main.index'))
+
+
+
+- Understanding How Flask-Login Works
+
+    - Here is the sequence of operations that occurs when a user logs into the system:
+
+        1. The user navigates to 'http://localhost:5000/auth/login' after clicking the link,
+             which returns the login form template.
+
+
+        2. The user enters their username and password and clicks 'Submit', which sends a 
+             POST request to the same route.
+
+             A. The handler validates the credentials submitted with the form, then invokes
+                  Flask-Login's 'login_user()' function to log the user in.
+
+             B. The 'login_user()' function writes the ID of the user to the user session as
+                  a string.
+
+             C. The view function returns with a redirect to the home page.
+
+
+        3. The browser receives the redirect and requests the home page.
+
+             A. The view function for the home page is invoked, and it triggers rendering of
+                  the template.
+
+             B. During the rendering of the template, the 'current_user' appears for the first
+                  time.
+
+             C. The 'current_user' context variable does not have a value assigned yet, so it
+                  invokes Flask-Login's internal function '_get_user()' to get the user's
+                  identity.
+
+             D. The '_get_user()' function check if there is a user ID stored in the user session.
+                  If there isn't one, an instance of Flask-Login's 'AnonymousUser' class.
+
+                If there is an ID, it invokes the function that the application registered with
+                  the 'user_loader' decorator.
+
+             E. The application's 'user_loader' handler reads the user from the database and 
+                  returns it.  Flask-Login assigs it to the 'current_user' context variable for
+                  the current request.
+
+             F. The template receives the newly assigned value of 'current_user'.
+
+
+        4. The 'login_required' decorator builds on top of the 'current_user' context variable by
+             only allowing the decorated view function to run when 'current_user.is_authenticated'
+             is set to True.
+
+
+        5. The 'logout_user()' simply deletes the user ID from the user session.
