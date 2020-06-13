@@ -586,4 +586,77 @@
 
 - Sending Confirmation Emails
 
-    - 
+    - We now need the 'register()' view method to send the confirmation email before
+        redirecting.
+
+
+        # app/auth/views.py
+        from ..email import send_email
+
+        @auth.route('/register', methods=['GET', 'POST'])
+        def register():
+            form = RegistrationForm()
+            if form.validate_on_submit():
+                # ...
+                db.session.add(user)
+                db.session.commit()
+                token = user.generate_confirmation_token()
+                send_email(user.email, 'Confirm Your Account',
+                           'auth/email/confirm', user=user, token=token)
+                flash('A confirmation email has been sent to you by email.')
+                return redirect(url_for('main.index'))
+            return render_template('auth/register.html', form=form)
+
+
+    - Now, we'll the template for the confirmation email.  For each email, a plain-text template
+        and an HTML template are needed.
+
+
+        # app/templates/auth/email/confirm.txt
+        Dear {{ user.username }},
+        
+        Welcome to Flasky!
+        
+        To confirm your account please click on the following link:
+        
+        {{ url_for('auth.confirm', token=token, _external=True) }}
+        
+        Sincerely,
+        
+        The Flasky Team
+        
+        Note: replies to this email address are not monitored.
+
+
+        # app/templates/auth/email/confirm.html
+        <p>Dear {{ user.username }},</p>
+        <p>Welcome to <b>Flasky</b>!</p>
+        <p>To confirm your account please 
+        <a href="{{ url_for('auth.confirm', token=token, _external=True) }}">click here</a>.
+        </p>
+        <p>Alternatively, you can paste the following link in your browser's address bar:</p>
+        <p>{{ url_for('auth.confirm', token=token, _external=True) }}</p>
+        <p>Sincerely,</p>
+        <p>The Flasky Team</p>
+        <p><small>Note: replies to this email address are not monitored.</small></p>
+
+
+    - Now, we add the view method to call when the link in the confirmation email is clicked.
+
+
+        # app/auth/views.py
+        @auth.route('/confirm/<token>')
+        @login_required
+        def confirm(token):
+            if current_user.confirmed:
+                return redirect(url_for('main.index'))
+            if current_user.confirm(token):
+                db.session.commit()
+                flash('You have confirmed your account. Thanks!')
+            else:
+                flash('The confirmation link is invalid or has expired.')
+            return redirect(url_for('main.index'))
+
+
+      Note that this method is decorated with 'login_required', so the user has to log back in
+        to access it.
