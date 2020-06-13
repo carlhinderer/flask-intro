@@ -660,3 +660,65 @@
 
       Note that this method is decorated with 'login_required', so the user has to log back in
         to access it.
+
+
+
+- Handling Unconfirmed Accounts
+
+    - Each application can decide what unconfirmed users are allowed to do before they 
+        confirm their accounts.  One possibility is to allow unconfirmed users to log in, 
+        but only show a page that asks them to confirm their accounts before gaining further
+        access.
+
+      This step can be done using Flask's 'before_request' hook.  However, from a blueprint,
+        the hook only applies to requests that belong to the blueprint.  
+
+      To install a blueprint hook for all application requests, we use the 'before_app_request'
+        decorator instead.
+
+
+    - Here, we filter unconfirmed accounts:
+
+        @auth.before_app_request
+        def before_request():
+            if current_user.is_authenticated \
+                    and not current_user.confirmed \
+                    and request.blueprint != 'auth' \
+                    and request.endpoint != 'static':
+                return redirect(url_for('auth.unconfirmed'))
+        
+        @auth.route('/unconfirmed')
+        def unconfirmed():
+            if current_user.is_anonymous or current_user.confirmed:
+                return redirect(url_for('main.index'))
+            return render_template('auth/unconfirmed.html') 
+
+
+    - The 'before_app_request' handler intercepts a request when 3 conditions are true:
+
+        1. A user is logged in (current_user.is_authenticated == True)
+
+        2. The user is not confirmed.
+
+        3. The requested URL is outside of the authentication blueprint and is not for a static
+             file.  
+
+      If theses 3 are met, a redirect is issed to the '/auth/unconfirmed' route.
+
+
+    - Note that using the 'before_app_request' hook and a redirect, we can redirect all traffic
+        to a specific URL.
+
+
+    - For unconfirmed users, we just send them a link to get their confirmation email resent.
+        Here's the view method for resending it.
+
+        # app/auth/views.py
+        @auth.route('/confirm')
+        @login_required
+        def resend_confirmation():
+            token = current_user.generate_confirmation_token()
+            send_email(current_user.email, 'Confirm Your Account',
+                       'auth/email/confirm', user=current_user, token=token)
+            flash('A new confirmation email has been sent to you by email.')
+            return redirect(url_for('main.index'))
