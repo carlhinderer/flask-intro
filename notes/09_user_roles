@@ -1,0 +1,64 @@
+-----------------------------------------------------------------------
+|  CHAPTER 9 - USER ROLES                                             |
+-----------------------------------------------------------------------
+
+- Database Representation of Roles
+
+    - Here is our new Role class, with a few columns added:
+
+        # app/models.py
+        class Role(db.Model):
+            __tablename__ = 'roles'
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String(64), unique=True)
+            default = db.Column(db.Boolean, default=False, index=True)
+            permissions = db.Column(db.Integer)
+            users = db.relationship('User', backref='role', lazy='dynamic')
+        
+            def __init__(self, **kwargs):
+                super(Role, self).__init__(**kwargs)
+                if self.permissions is None:
+                    self.permissions = 0
+
+
+    - The new 'default' column should be True for only one role, and False for all the
+        others.  The one marked default will be assigned to new users upon registration.
+        
+      Since this table is going to be searched for the default, this column gets an
+        index.
+
+
+    - The other new column is 'permissions'.  Here is the list of permissions:
+
+        Task name                         Permission name     Permission value
+        --------------------------------------------------------------------------
+        Follow users                      FOLLOW              1
+
+        Comment on posts made by others   COMMENT             2
+
+        Write articles                    WRITE               4
+
+        Moderate comments made by others  MODERATE            8
+
+        Administration access             ADMIN               16
+
+
+      The benefit of using powers of 2 is that we can combine them.
+
+
+    - Here is the Permission class with these constants:
+
+        # app/models.py
+        class Permission:
+            FOLLOW = 1
+            COMMENT = 2
+            WRITE = 4
+            MODERATE = 8
+            ADMIN = 16
+
+
+
+
+- Role Assignment
+
+- Role Verification
