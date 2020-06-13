@@ -74,7 +74,7 @@
                 if self.has_permission(perm):
                     self.permissions -= perm
 
-            def reset_permission(self):
+            def reset_permissions(self):
                 self.permissions = 0
 
             def has_permission(self, perm):
@@ -157,4 +157,106 @@
 
 - Role Assignment
 
+    - When users register, they should get the default role.  For most users, that should be the
+        'User' role.  The only exception is administrators, who should get the 'Administrator'
+        role to start.
+
+
+        # app/models.py
+        class User(UserMixin, db.Model):
+            # ...
+            def __init__(self, **kwargs):
+                super(User, self).__init__(**kwargs)
+                if self.role is None:
+                    if self.email == current_app.config['FLASKY_ADMIN']:
+                        self.role = Role.query.filter_by(name='Administrator').first()
+                    if self.role is None:
+                        self.role = Role.query.filter_by(default=True).first()
+            # ...
+
+
+
 - Role Verification
+
+    - To simplify the implementation of roles and permissions, we can add a helper method
+        that checks whether users have a given permission in a role they have been assigned.
+
+
+        # app/models.py
+        from flask_login import UserMixin, AnonymousUserMixin
+
+        class User(UserMixin, db.Model):
+            # ...
+        
+            def can(self, perm):
+                return self.role is not None and self.role.has_permission(perm)
+        
+            def is_administrator(self):
+                return self.can(Permission.ADMIN)
+        
+        class AnonymousUser(AnonymousUserMixin):
+            def can(self, permissions):
+                return False
+        
+            def is_administrator(self):
+                return False
+        
+        login_manager.anonymous_user = AnonymousUser
+
+
+    - The 'AnonymousUser' class is created as a convenience.  This way, we can call 
+        'current_user.can()' and 'current_user.is_administrator()' without having to check 
+        whether the user is logged in first.  
+
+      Flask-Login is told to use the application's custom anonymous user by setting its class
+        in the 'login_manager.anonymous_user' attribute.  
+
+
+
+- Custom Decorators for Permissions
+
+    - We can create 2 custom decorators, one for generic permission checks, and one for checking
+        whether the user is an administrator.
+
+
+        # app/decorators.py
+        from functools import wraps
+        from flask import abort
+        from flask_login import current_user
+        from .models import Permission
+        
+        def permission_required(permission):
+            def decorator(f):
+                @wraps(f)
+                def decorated_function(*args, **kwargs):
+                    if not current_user.can(permission):
+                        abort(403)
+                    return f(*args, **kwargs)
+                return decorated_function
+            return decorator
+        
+        def admin_required(f):
+            return permission_required(Permission.ADMIN)(f)
+
+
+    - These decorators are built using the Python standard library 'functools' package.  
+
+      They return a 403 if the user does not have the required permission.  We'll have to add
+        a 403 error template, similar to the 404 and 500 templates we created previously.
+
+        # app/main/errors.py
+        @main.app_errorhandler(403)
+        def forbidden(e):
+            return render_template('403.html')
+
+
+        # app/templates/403.html
+        {% extends "base.html" %}
+        
+        {% block title %}Flasky - Forbidden{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Forbidden</h1>
+        </div>
+        {% endblock %}
