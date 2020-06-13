@@ -58,6 +58,102 @@
 
 
 
+- Permission Management in the Role Model
+
+    - With the permission constants in place, we can now add a few methods to the Role
+        model to manage permissions.
+
+        class Role(db.Model):
+            # ...
+
+            def add_permission(self, perm):
+                if not self.has_permission(perm):
+                    self.permissions += perm
+
+            def remove_permission(self, perm):
+                if self.has_permission(perm):
+                    self.permissions -= perm
+
+            def reset_permission(self):
+                self.permissions = 0
+
+            def has_permission(self, perm):
+                return self.permissions & perm == perm
+
+
+    - Now, we can test the permissions in the shell.
+
+        >>> r = Role(name='User')
+        >>> r.add_permission(Permission.FOLLOW)
+        >>> r.add_permission(Permission.WRITE)
+
+        >>> r.has_permission(Permission.FOLLOW)
+        True
+        >>> r.has_permission(Permission.ADMIN)
+        False
+
+        >>> r.reset_permissions()
+        >>> r.has_permission(Permission.FOLLOW)
+        False
+
+
+
+- The User Roles
+
+    - Here are the user roles we will support in our application.
+
+        User role      Permissions                Description
+        ----------------------------------------------------------------------------------------
+        None           None                       Read-only access to the application. This applies 
+                                                    to unknown users who are not logged in.
+
+        User           FOLLOW, COMMENT, WRITE     Basic permissions to write articles and comments and 
+                                                    to follow other users. This is the default for new 
+                                                    users.
+
+        Moderator      FOLLOW, COMMENT, WRITE,    Adds permission to moderate comments made by other users.
+                       MODERATE
+    
+        Administrator  FOLLOW, COMMENT, WRITE,    Full access, which includes permission to change the
+                       MODERATE, ADMIN              roles of other users.
+
+
+
+    - Since adding the 4 roles manually can be error-prone and time-consuming, we'll add a method  to
+        do it.  It will be useful for testing also.
+
+        # app/models.py
+        class Role(db.Model):
+            # ...
+            @staticmethod
+            def insert_roles():
+                roles = {
+                    'User': [Permission.FOLLOW, Permission.COMMENT, Permission.WRITE],
+                    'Moderator': [Permission.FOLLOW, Permission.COMMENT,
+                                  Permission.WRITE, Permission.MODERATE],
+                    'Administrator': [Permission.FOLLOW, Permission.COMMENT,
+                                      Permission.WRITE, Permission.MODERATE,
+                                      Permission.ADMIN],
+                }
+                default_role = 'User'
+                for r in roles:
+                    role = Role.query.filter_by(name=r).first()
+                    if role is None:
+                        role = Role(name=r)
+                    role.reset_permissions()
+                    for perm in roles[r]:
+                        role.add_permission(perm)
+                    role.default = (role.name == default_role)
+                    db.session.add(role)
+                db.session.commit()
+
+    
+    - Note that our 'insert_roles()' method is static, so it can be called directly on the class
+        and does not require an object to be instantiated.
+
+        >>> Role.insert_roles()
+
+
 
 - Role Assignment
 
