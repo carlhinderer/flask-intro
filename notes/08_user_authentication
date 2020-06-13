@@ -722,3 +722,92 @@
                        'auth/email/confirm', user=current_user, token=token)
             flash('A new confirmation email has been sent to you by email.')
             return redirect(url_for('main.index'))
+
+
+    - Here's the template we show for logged in users who are still unconfirmed:
+
+        # app/templates/auth/unconfirmed.html
+        {% extends "base.html" %}
+
+        {% block title %}Flasky - Confirm your account{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>
+                Hello, {{ current_user.username }}!
+            </h1>
+            <h3>You have not confirmed your account yet.</h3>
+            <p>
+                Before you can access this site you need to confirm your account.
+                Check your inbox, you should have received an email with a confirmation link.
+            </p>
+            <p>
+                Need another confirmation email?
+                <a href="{{ url_for('auth.resend_confirmation') }}">Click here</a>
+            </p>
+        </div>
+        {% endblock %}
+
+
+
+- Handling Password Updates
+
+    - Users may want to change their password.  This is easy, since as long as the user is
+        logged in, we can just present them with a form that asks for the old password and
+        a new password to replace it.
+
+        # app/auth/views.py
+
+        @auth.route('/change-password', methods=['GET', 'POST'])
+        @login_required
+        def change_password():
+            form = ChangePasswordForm()
+            if form.validate_on_submit():
+                if current_user.verify_password(form.old_password.data):
+                    current_user.password = form.password.data
+                    db.session.add(current_user)
+                    db.session.commit()
+                    flash('Your password has been updated.')
+                    return redirect(url_for('main.index'))
+                else:
+                    flash('Invalid password.')
+            return render_template("auth/change_password.html", form=form)
+
+
+    - Here is the ChangePasswordForm:
+
+        # app/auth/forms.py
+
+        class ChangePasswordForm(FlaskForm):
+            old_password = PasswordField('Old password', validators=[DataRequired()])
+            password = PasswordField('New password', validators=[
+                DataRequired(), EqualTo('password2', message='Passwords must match.')])
+            password2 = PasswordField('Confirm new password',
+                                      validators=[DataRequired()])
+            submit = SubmitField('Update Password')
+
+
+    - Here is the template:
+
+        # app/templates/auth/change_password.html
+
+        {% extends "base.html" %}
+        {% import "bootstrap/wtf.html" as wtf %}
+        
+        {% block title %}Flasky - Change Password{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Change Your Password</h1>
+        </div>
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+        {% endblock %}
+
+
+
+- Handling Password Resets
+
+
+- Email Address Changes
