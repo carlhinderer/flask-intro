@@ -260,3 +260,54 @@
             <h1>Forbidden</h1>
         </div>
         {% endblock %}
+
+
+
+- Using the Custom Decorators
+
+    - Here are 2 examples of using these new decorators:
+
+
+        from .decorators import admin_required, permission_required
+
+        @main.route('/admin')
+        @login_required
+        @admin_required
+        def for_admins_only():
+            return "For administrators!"
+        
+        @main.route('/moderate')
+        @login_required
+        @permission_required(Permission.MODERATE)
+        def for_moderators_only():
+            return "For comment moderators!"
+
+
+    - Permissions may also need to be checked from templates, so the 'Permission' class and
+        all it's constants need to be accessible to them.  
+
+      To avoid having to add a template argument in every 'render_template()' call, a 'context
+        processor' can be used.  Context processors make variables available to all templates
+        during rendering.
+
+
+        # app/main/__init__.py
+        @main.app_context_processor
+        def inject_permissions():
+            return dict(Permission=Permission)
+
+
+
+- Unit Tests for Roles and Permissions
+
+    - We can add unit tests to ensure the roles have the correct permissions.
+
+        # tests/test_user_model.py
+        def test_user_role(self):
+            u = User(email='john@example.com', password='cat')
+            self.assertTrue(u.can(Permission.FOLLOW))
+            self.assertTrue(u.can(Permission.COMMENT))
+            self.assertTrue(u.can(Permission.WRITE))
+            self.assertFalse(u.can(Permission.MODERATE))
+            self.assertFalse(u.can(Permission.ADMIN))
+        ...
