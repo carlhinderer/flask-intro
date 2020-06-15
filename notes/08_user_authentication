@@ -980,3 +980,174 @@
 
 
 - Email Address Changes
+
+    - Users may want to change their registered email address.  Before the new address is accepted,
+        it should be verified with a confirmation email.
+
+      Once the server receives the token from the email back, it can update the user object.
+
+      While the server waits to receive the token, it can store the new email address either in
+        a database column or in the token along with the user's id (which is what we will do).
+
+
+    - Here is the new form for email address changes:
+
+        # app/auth/forms.py
+
+        class ChangeEmailForm(FlaskForm):
+            email = StringField('New Email', validators=[DataRequired(), Length(1, 64),
+                                                         Email()])
+            password = PasswordField('Password', validators=[DataRequired()])
+            submit = SubmitField('Update Email Address')
+        
+            def validate_email(self, field):
+                if User.query.filter_by(email=field.data.lower()).first():
+                    raise ValidationError('Email already registered.')
+
+
+    - Here are the new view methods:
+
+        # app/auth/views.py
+        from .forms import ChangeEmailForm
+
+        @auth.route('/change_email', methods=['GET', 'POST'])
+        @login_required
+        def change_email_request():
+            form = ChangeEmailForm()
+            if form.validate_on_submit():
+                if current_user.verify_password(form.password.data):
+                    new_email = form.email.data.lower()
+                    token = current_user.generate_email_change_token(new_email)
+                    send_email(new_email, 'Confirm your email address',
+                               'auth/email/change_email',
+                               user=current_user, token=token)
+                    flash('An email with instructions to confirm your new email '
+                          'address has been sent to you.')
+                    return redirect(url_for('main.index'))
+                else:
+                    flash('Invalid email or password.')
+            return render_template("auth/change_email.html", form=form)
+        
+        
+        @auth.route('/change_email/<token>')
+        @login_required
+        def change_email(token):
+            if current_user.change_email(token):
+                db.session.commit()
+                flash('Your email address has been updated.')
+            else:
+                flash('Invalid request.')
+            return redirect(url_for('main.index'))
+
+
+    - Here are the changes to the User model:
+
+        def generate_email_change_token(self, new_email, expiration=3600):
+            s = Serializer(current_app.config['SECRET_KEY'], expiration)
+            return s.dumps(
+                {'change_email': self.id, 'new_email': new_email}).decode('utf-8')
+    
+        def change_email(self, token):
+            s = Serializer(current_app.config['SECRET_KEY'])
+            try:
+                data = s.loads(token.encode('utf-8'))
+            except:
+                return False
+            if data.get('change_email') != self.id:
+                return False
+            new_email = data.get('new_email')
+            if new_email is None:
+                return False
+            if self.query.filter_by(email=new_email).first() is not None:
+                return False
+            self.email = new_email
+            db.session.add(self)
+            return True
+
+
+    - Here's the new template for displaying the email address change form:
+
+        # app/templates/auth/change_email.html
+
+        {% extends "base.html" %}
+        {% import "bootstrap/wtf.html" as wtf %}
+        
+        {% block title %}Flasky - Change Email Address{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Change Your Email Address</h1>
+        </div>
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+        {% endblock %}
+
+
+    - Here are the templates for the emails for password changes:
+
+        # app/templates/auth/email/change_email.html
+        <p>Dear {{ user.username }},</p>
+        <p>To confirm your new email address
+            a href="{{ url_for('auth.change_email', token=token, _external=True) }}">click here</a>.
+        </p>
+        <p>Alternatively, you can paste the following link in your browser's address bar:</p>
+        <p>{{ url_for('auth.change_email', token=token, _external=True) }}</p>
+        <p>Sincerely,</p>
+        <p>The Flasky Team</p>
+        <p><small>Note: replies to this email address are not monitored.</small></p>
+
+
+        # app/templates/auth/email/change_email.txt
+        Dear {{ user.username }},
+
+        To confirm your new email address click on the following link:
+        
+        {{ url_for('auth.change_email', token=token, _external=True) }}
+        
+        Sincerely,
+        
+        The Flasky Team
+        
+        Note: replies to this email address are not monitored.
+
+
+    - We'll add a link to the email address change under out password change link.
+
+        # app/templates/base.html
+
+        <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+        <li><a href="{{ url_for('auth.change_email_request') }}">Change Email</a></li>
+
+
+    - Finally, we'll add the tests for the email address changes.
+
+        # tests/test_user_model.py
+
+        def test_valid_email_change_token(self):
+            u = User(email='john@example.com', password='cat')
+            db.session.add(u)
+            db.session.commit()
+            token = u.generate_email_change_token('susan@example.org')
+            self.assertTrue(u.change_email(token))
+            self.assertTrue(u.email == 'susan@example.org')
+    
+        def test_invalid_email_change_token(self):
+            u1 = User(email='john@example.com', password='cat')
+            u2 = User(email='susan@example.org', password='dog')
+            db.session.add(u1)
+            db.session.add(u2)
+            db.session.commit()
+            token = u1.generate_email_change_token('david@example.net')
+            self.assertFalse(u2.change_email(token))
+            self.assertTrue(u2.email == 'susan@example.org')
+    
+        def test_duplicate_email_change_token(self):
+            u1 = User(email='john@example.com', password='cat')
+            u2 = User(email='susan@example.org', password='dog')
+            db.session.add(u1)
+            db.session.add(u2)
+            db.session.commit()
+            token = u2.generate_email_change_token('john@example.com')
+            self.assertFalse(u2.change_email(token))
+            self.assertTrue(u2.email == 'susan@example.org')
