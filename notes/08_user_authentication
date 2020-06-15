@@ -757,6 +757,7 @@
         a new password to replace it.
 
         # app/auth/views.py
+        from .forms import ChangePasswordForm
 
         @auth.route('/change-password', methods=['GET', 'POST'])
         @login_required
@@ -806,6 +807,20 @@
         {% endblock %}
 
 
+    - Also, we refactor the navbar.  Instead of having a 'Log Out' link, we'll create a dropdown
+        with options to either 'Log Out' or 'Change Password'.
+
+        # app/templates/base.html
+
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a href="{{ url_for('auth.change_password') }}">Change Password</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
+            </ul>
+        </li>
+
+
 
 - Handling Password Resets
 
@@ -823,6 +838,7 @@
     - Here are the view methods:
 
         # app/auth/views.py
+        from .forms import PasswordResetRequestForm, PasswordResetForm
 
         @auth.route('/reset', methods=['GET', 'POST'])
         def password_reset_request():
@@ -874,7 +890,92 @@
             submit = SubmitField('Reset Password')
 
 
-    - 
+    - Here are the model changes required:
+
+        # app/models.py
+
+        def generate_reset_token(self, expiration=3600):
+            s = Serializer(current_app.config['SECRET_KEY'], expiration)
+            return s.dumps({'reset': self.id}).decode('utf-8')
+    
+        @staticmethod
+        def reset_password(token, new_password):
+            s = Serializer(current_app.config['SECRET_KEY'])
+            try:
+                data = s.loads(token.encode('utf-8'))
+            except:
+                return False
+            user = User.query.get(data.get('reset'))
+            if user is None:
+                return False
+            user.password = new_password
+            db.session.add(user)
+            return True
+
+
+    - Here are the templates for the password reset emails.
+
+        # app/templates/auth/email/reset_password.html
+
+        <p>Dear {{ user.username }},</p>
+        <p>To reset your password 
+            <a href="{{ url_for('auth.password_reset', token=token, _external=True) }}">click here</a>.
+        </p>
+        <p>Alternatively, you can paste the following link in your browser's address bar:</p>
+        <p>{{ url_for('auth.password_reset', token=token, _external=True) }}</p>
+        <p>If you have not requested a password reset simply ignore this message.</p>
+        <p>Sincerely,</p>
+        <p>The Flasky Team</p>
+        <p><small>Note: replies to this email address are not monitored.</small></p>
+
+
+        # app/templates/auth/email/reset_password.txt
+
+        Dear {{ user.username }},
+
+        To reset your password click on the following link:
+        
+        {{ url_for('auth.password_reset', token=token, _external=True) }}
+        
+        If you have not requested a password reset simply ignore this message.
+        
+        Sincerely,
+        
+        The Flasky Team
+        
+        Note: replies to this email address are not monitored.
+
+
+    - Now, we can add the 'Reset Password' link to the login form.
+
+        # app/templates/auth/login.html
+
+        {{ wtf.quick_form(form) }}
+        <br>
+        <p>Forgot your password? 
+            <a href="{{ url_for('auth.password_reset_request') }}">Click here to reset it</a>.
+        </p>
+
+
+    - Finally, we'll add user model tests for the password resets.
+
+        # tests/test_user_model.py
+
+        def test_valid_reset_token(self):
+            u = User(password='cat')
+            db.session.add(u)
+            db.session.commit()
+            token = u.generate_reset_token()
+            self.assertTrue(User.reset_password(token, 'dog'))
+            self.assertTrue(u.verify_password('dog'))
+    
+        def test_invalid_reset_token(self):
+            u = User(password='cat')
+            db.session.add(u)
+            db.session.commit()
+            token = u.generate_reset_token()
+            self.assertFalse(User.reset_password(token + 'a', 'horse'))
+        self.assertTrue(u.verify_password('cat'))
 
 
 
