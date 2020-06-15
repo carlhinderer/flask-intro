@@ -28,6 +28,11 @@ from flask_migrate import Migrate
 migrate = Migrate(app, db)
 
 
+# Initialize Mail
+from flask_mail import Mail
+mail = Mail(app)
+
+
 # Model Definitions
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -100,6 +105,10 @@ def cookie():
     response.set_cookie('answer', '42')
     return response
 
+@app.route('/cookies')
+def cookies():
+    return request.cookies
+
 @app.route('/redirect')
 def redirect_to_google():
     return redirect('http://www.google.com/')
@@ -108,6 +117,14 @@ def redirect_to_google():
 def abort_404():
     abort(404)
 
+@app.route('/diagnostic')
+def diagnostic():
+    print('Form:', request.form)
+    print('Args:', request.args)
+    print('Values:', request.values)
+    print('Cookies:', request.cookies)
+    print('Headers:', request.headers)
+    return redirect('/')
 
 @app.errorhandler(404)
 def page_not_found(e):

@@ -221,7 +221,7 @@
         then click the refresh button on our browser, we'll get a warning asking us to confirm
         whether we want to submit the form again.
 
-      This happens becuase browsers repeat the last request they sent when they are asked to
+      This happens because browsers repeat the last request they sent when they are asked to
         refresh a page.  Since many user don't understand this behavior, it is considered good
         practice to never leave a POST request as the last request sent by the browser.
 
