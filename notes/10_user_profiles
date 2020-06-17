@@ -47,3 +47,62 @@
                         and request.blueprint != 'auth' \
                         and request.endpoint != 'static':
                     return redirect(url_for('auth.unconfirmed'))
+
+
+
+- User Profile Page
+
+    - Creating a profile page for each user is straightforward.  Here is the route for the
+        profile page.
+
+        # app/main/views.py
+
+        @main.route('/user/<username>')
+        def user(username):
+            user = User.query.filter_by(username=username).first_or_404()
+            return render_template('user.html', user=user)
+
+
+    - Here is the User Profile template:
+
+        # app/templates/user.html
+
+        {% extends "base.html" %}
+        {% block title %}Flasky - {{ user.username }}{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>{{ user.username }}</h1>
+            {% if user.name or user.location %}
+            <p>
+                {% if user.name %}{{ user.name }}{% endif %}
+                {% if user.location %}
+                    From <a href="http://maps.google.com/?q={{ user.location }}">
+                        {{ user.location }}
+                    </a>
+                {% endif %}
+            </p>
+            {% endif %}
+            {% if current_user.is_administrator() %}
+            <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+            {% endif %}
+            {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+            <p>
+                Member since {{ moment(user.member_since).format('L') }}.
+                Last seen {{ moment(user.last_seen).fromNow() }}.
+            </p>
+        </div>
+        {% endblock %}
+
+
+    - And, we can add the link to the User Profile page to the main navbar.
+
+        # app/templates/base.html
+
+        {% if current_user.is_authenticated %}
+        <li>
+            <a href="{{ url_for('main.user', username=current_user.username) }}">
+                Profile
+            </a>
+        </li>
+        {% endif %}
