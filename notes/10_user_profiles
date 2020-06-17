@@ -106,3 +106,61 @@
             </a>
         </li>
         {% endif %}
+
+
+
+- User-Level Profile Editor
+
+    - There are 2 different use cases for editing profiles:
+
+        1. The user needs to edit their own profile information
+        2. The administrator needs to edit users, including fields like role
+
+      Since these forms are substantially different, we'll add 2 different forms.
+
+
+    - Here is the profile editing form for regular users:
+
+        # app/main/forms.py
+
+        class EditProfileForm(FlaskForm):
+            name = StringField('Real name', validators=[Length(0, 64)])
+            location = StringField('Location', validators=[Length(0, 64)])
+            about_me = TextAreaField('About me')
+            submit = SubmitField('Submit')
+
+      Note that since all the fields in the form are optional, the length validator allows
+        a length of 0.
+
+
+    - Here is the view method for editing the profile:
+
+        # app/main/views.py
+
+        @main.route('/edit-profile', methods=['GET', 'POST'])
+        @login_required
+        def edit_profile():
+            form = EditProfileForm()
+            if form.validate_on_submit():
+                current_user.name = form.name.data
+                current_user.location = form.location.data
+                current_user.about_me = form.about_me.data
+                db.session.add(current_user._get_current_object())
+                db.session.commit()
+                flash('Your profile has been updated.')
+                return redirect(url_for('.user', username=current_user.username))
+            form.name.data = current_user.name
+            form.location.data = current_user.location
+            form.about_me.data = current_user.about_me
+            return render_template('edit_profile.html', form=form)
+
+
+    - We can add a link on the profile page to the profile edit form.
+
+        # app/templates/user.html
+
+        {% if user == current_user %}
+        <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">
+            Edit Profile
+        </a>
+        {% endif %}
