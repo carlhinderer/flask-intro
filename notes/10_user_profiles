@@ -1,0 +1,49 @@
+-----------------------------------------------------------------------
+|  CHAPTER 10 - USER ROLES                                            |
+-----------------------------------------------------------------------
+
+- Profile Information
+
+    - To make user profile pages more interesting, we'll add several new columns to the
+        'users' table.
+
+        # app/models.py
+
+        class User(UserMixin, db.Model):
+            # ...
+            name = db.Column(db.String(64))
+            location = db.Column(db.String(64))
+            about_me = db.Column(db.Text())
+            member_since = db.Column(db.DateTime(), default=datetime.utcnow)
+            last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+
+
+    - Note that the 'about_me' column is a 'db.Text', so it is variable-length.
+
+
+    - The 'last_seen' field needs to be refreshed each time the user accesses the site.  
+        We can add a method to the User class to perform this update.
+
+        # app/models.py
+
+        class User(UserMixin, db.Model):
+            # ...
+            def ping(self):
+                self.last_seen = datetime.utcnow()
+                db.session.add(self)
+                db.session.commit()
+
+
+    - Then, we can add the 'ping' to our 'before_request' hook.
+
+        # app/auth/views.py
+
+        @auth.before_app_request
+        def before_request():
+            if current_user.is_authenticated:
+                current_user.ping()
+                if not current_user.confirmed \
+                        and request.endpoint \
+                        and request.blueprint != 'auth' \
+                        and request.endpoint != 'static':
+                    return redirect(url_for('auth.unconfirmed'))
