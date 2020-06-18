@@ -164,3 +164,105 @@
             Edit Profile
         </a>
         {% endif %}
+
+
+
+- Administrator-Level Profile Editor
+
+    - In addition to the 3 user fields, admins can also edit a user's email, username, confirmed
+        status, and role.  Here is the form:
+
+        # app/main/forms.py
+
+        class EditProfileAdminForm(FlaskForm):
+            email = StringField('Email', validators=[DataRequired(), Length(1, 64),
+                                                     Email()])
+            username = StringField('Username', validators=[
+                DataRequired(), Length(1, 64),
+                Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
+                       'Usernames must have only letters, numbers, dots or '
+                       'underscores')])
+            confirmed = BooleanField('Confirmed')
+            role = SelectField('Role', coerce=int)
+            name = StringField('Real name', validators=[Length(0, 64)])
+            location = StringField('Location', validators=[Length(0, 64)])
+            about_me = TextAreaField('About me')
+            submit = SubmitField('Submit')
+        
+            def __init__(self, user, *args, **kwargs):
+                super(EditProfileAdminForm, self).__init__(*args, **kwargs)
+                self.role.choices = [(role.id, role.name)
+                                     for role in Role.query.order_by(Role.name).all()]
+                self.user = user
+        
+            def validate_email(self, field):
+                if field.data != self.user.email and \
+                        User.query.filter_by(email=field.data).first():
+                    raise ValidationError('Email already registered.')
+        
+            def validate_username(self, field):
+                if field.data != self.user.username and \
+                        User.query.filter_by(username=field.data).first():
+                    raise ValidationError('Username already in use.')
+
+
+    - The 'SelectField' is WTForm’s wrapper for the <select> HTML form control, which implements 
+        a drop-down list, used in this form to select a user role. An instance of SelectField must 
+        have the items set in its choices attribute. 
+
+      They must be given as a list of tuples, with each tuple consisting of two values: an 
+        identifier for the item and the text to show in the control as a string.  
+
+      The identifier for each tuple is set to the id of each role, and since these are integers, 
+        a 'coerce=int' argument is added to the SelectField constructor so that the field values 
+        are stored as integers instead of the default, which is strings.
+
+
+    - Here is the view method for admin editing of profiles.
+
+        # app/main/views.py
+
+        from ..decorators import admin_required
+
+        @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
+        @login_required
+        @admin_required
+        def edit_profile_admin(id):
+            user = User.query.get_or_404(id)
+            form = EditProfileAdminForm(user=user)
+            if form.validate_on_submit():
+                user.email = form.email.data
+                user.username = form.username.data
+                user.confirmed = form.confirmed.data
+                user.role = Role.query.get(form.role.data)
+                user.name = form.name.data
+                user.location = form.location.data
+                user.about_me = form.about_me.data
+                db.session.add(user)
+                db.session.commit()
+                flash('The profile has been updated.')
+                return redirect(url_for('.user', username=user.username))
+            form.email.data = user.email
+            form.username.data = user.username
+            form.confirmed.data = user.confirmed
+            form.role.data = user.role_id
+            form.name.data = user.name
+            form.location.data = user.location
+            form.about_me.data = user.about_me
+            return render_template('edit_profile.html', form=form, user=user)
+
+
+    - Finally, we add a button for admin edits of user profiles.
+
+        # app/templates/user.html
+
+        <p>
+            {% if user == current_user %}
+            <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">Edit Profile</a>
+            {% endif %}
+            {% if current_user.is_administrator() %}
+            <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id) }}">
+                Edit Profile [Admin]
+            </a>
+            {% endif %}
+        </p>
