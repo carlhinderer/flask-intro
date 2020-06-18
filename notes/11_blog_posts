@@ -87,8 +87,67 @@
 
 - Blog Posts on Profile Pages
 
+    - The user profile page can be improved by showing a list of blog posts authored by
+        the user.
+
+        # app/main/views.py
+
+        @main.route('/user/<username>')
+        def user(username):
+            user = User.query.filter_by(username=username).first()
+            if user is None:
+                abort(404)
+            posts = user.posts.order_by(Post.timestamp.desc()).all()
+            return render_template('user.html', user=user, posts=posts)
+        
+
+    - The 'user.html' template needs to have the same <ul> tree of posts that 'index.html' 
+        uses.  To avoid duplicating the code, we can create a snippet that can be used by 
+        both files.  By convention, we name these templates starting with an underscore.
+
+        # app/templates/user.html
+        ...
+        <h3>Posts by {{ user.username }}</h3>
+        {% include '_posts.html' %}
+        ...
+
+        # app/templates/index.html
+        {% include '_posts.html' %}
+
+
+    - Here is the new snippet template:
+
+        # app/templates/_posts.html
+
+        <ul class="posts">
+            {% for post in posts %}
+            <li class="post">
+                <div class="post-thumbnail">
+                    <a href="{{ url_for('.user', username=post.author.username) }}">
+                        <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+                    </a>
+                </div>
+                <div class="post-content">
+                    <div class="post-date">{{ moment(post.timestamp).fromNow() }}</div>
+                    <div class="post-author">
+                        <a href="{{ url_for('.user', username=post.author.username) }}">
+                        {{ post.author.username }}
+                        </a>
+                    </div>
+                    <div class="post-body">{{ post.body }}</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+
+
+
 - Paginating Long Blog Post Lists
 
+    - 
+
+
+    
 - Creating Fake Blog Post Data
 
 - Rendering Pagination Links in Pages
