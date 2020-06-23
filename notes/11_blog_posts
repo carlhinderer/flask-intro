@@ -144,13 +144,106 @@
 
 - Paginating Long Blog Post Lists
 
-    - 
+    - As the site grows, it will become slow and impractical to show the complete list of
+        posts.  The solution is to paginate the data and render it in chunks.
 
 
-    
+
 - Creating Fake Blog Post Data
 
+    - To be able to work with multiple pages of posts, we'll need a test database with a
+        large amount of data.  We'll use the 'faker' package to add fake users and posts.
+
+      We'll split our package lists into 'dev' and 'prod', with shared requirements in the
+        'common' file.
+
+
+        # app/requirements/common.txt
+        alembic==1.4.2
+        ...
+
+        # app/requirements/dev.txt
+        -r common.txt
+        faker==4.1.1
+
+        # app/requirements/prod.txt
+        -r common.txt
+
+
+    - Now, we'll add the code to fake the users and posts:
+
+        # app/fake.py
+        from random import randint
+        from sqlalchemy.exc import IntegrityError
+        from faker import Faker
+        from . import db
+        from .models import User, Post
+        
+        def users(count=100):
+            fake = Faker()
+            i = 0
+            while i < count:
+                u = User(email=fake.email(),
+                         username=fake.user_name(),
+                         password='password',
+                         confirmed=True,
+                         name=fake.name(),
+                         location=fake.city(),
+                         about_me=fake.text(),
+                         member_since=fake.past_date())
+                db.session.add(u)
+                try:
+                    db.session.commit()
+                    i += 1
+                except IntegrityError:
+                    db.session.rollback()
+        
+        def posts(count=100):
+            fake = Faker()
+            user_count = User.query.count()
+            for i in range(count):
+                u = User.query.offset(randint(0, user_count - 1)).first()
+                p = Post(body=fake.text(),
+                         timestamp=fake.past_date(),
+                         author=u)
+                db.session.add(p)
+            db.session.commit()
+
+
+    - Now, we can run these functions in the shell.
+
+        >>> from app import fake
+        >>> fake.users(100)
+        >>> fake.posts(100)
+
+
+
 - Rendering Pagination Links in Pages
+
+    - Here are the changes to the home page view method we will make to support
+        pagination.
+
+
+        # app/main/views.py
+
+        @main.route('/', methods=['GET', 'POST'])
+        def index():
+            # ...
+            page = request.args.get('page', 1, type=int)
+            pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+                page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+                error_out=False)
+            posts = pagination.items
+            return render_template('index.html', form=form, posts=posts,
+                                   pagination=pagination)
+
+
+    - With this change, the home page will show a limited number of posts.  To see the second
+        page of results, use:
+
+        http://localhost/?page=2
+
+
 
 - Adding a Pagination Widget
 

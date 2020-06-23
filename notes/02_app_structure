@@ -154,7 +154,7 @@
         uses contexts to temporarily make certain objects globally accessible.
 
       Note that even though 'request' looks like a global variable, it cannot really be, since
-        several threads on the server can be handling different requets.  Contexts can make
+        several threads on the server can be handling different requests.  Contexts can make
         certain variables globally accessible to a thread without interfering with other threads.
 
 
