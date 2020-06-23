@@ -245,7 +245,129 @@
 
 
 
+- The Pagination Object
+
+    - The return value of 'paginate()' is an object of class 'Pagination', a class defined by
+        Flask-SQLAlchemy.  This objects contains properties useful for generating links in a
+        template, so it is passed to the template as an argument.
+
+
+    - Here are the pagination object's attributes:
+
+        Attribute       Description
+        --------------------------------------------------------------------------
+        items           The records in the current page
+
+        query           The source query that was paginated
+
+        page            The current page number
+
+        prev_num        The previous page number
+
+        next_num        The next page number
+
+        has_next        True if there is a next page
+
+        has_prev        True if there is a previous page
+
+        pages           The total number of pages for the query
+
+        per_page        The number of items per page
+
+        total           The total number of items returned by the query
+
+
+        Method          Description
+        --------------------------------------------------------------------------
+        iter_pages(left_edge=2, left_current=2, right_current=5, right_edge=2)
+    
+           An iterator that returns the sequence of page numbers to display in a pagination 
+             widget. 
+
+           The list will have left_edge pages on the left side, left_current pages to the left 
+             of the current page, right_current pages to the right of the current page, and 
+             right_edge pages on the right side. 
+
+           For example, for page 50 of 100 this iterator configured with default values will 
+             return the following pages: 1, 2, None, 48, 49, 50, 51, 52, 53, 54, 55, None, 99, 
+             100. A None value in the sequence indicates a gap in the sequence of pages.
+
+
+        prev()          A pagination object for the previous page.
+
+        next()          A pagination object for the next page.
+
+
+
 - Adding a Pagination Widget
+
+    - Using this pagination object and Bootstrap's pagination CSS classes, it is quite easy to
+        build a pagination footer.
+
+
+        # app/templates/_macros.html
+
+        {% macro pagination_widget(pagination, endpoint) %}
+        <ul class="pagination">
+            <li{% if not pagination.has_prev %} class="disabled"{% endif %}>
+                <a href="{% if pagination.has_prev %}{{ url_for(endpoint,
+                    page = pagination.page - 1, **kwargs) }}{% else %}#{% endif %}">
+                    &laquo;
+                </a>
+            </li>
+            {% for p in pagination.iter_pages() %}
+                {% if p %}
+                    {% if p == pagination.page %}
+                    <li class="active">
+                        <a href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                    </li>
+                    {% else %}
+                    <li>
+                        <a href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <li class="disabled"><a href="#">&hellip;</a></li>
+                {% endif %}
+            {% endfor %}
+            <li{% if not pagination.has_next %} class="disabled"{% endif %}>
+                <a href="{% if pagination.has_next %}{{ url_for(endpoint,
+                    page = pagination.page + 1, **kwargs) }}{% else %}#{% endif %}">
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+        {% endmacro %}
+
+
+    - The macro creates a Bootstrap pagination element, which is a styled unordered list.
+        It creates:
+
+          1. Previous link (disabled if its 1st page)
+          2. Links to pages returned by 'iter_pages()' iterator
+          3. Next page (disabled if its last page)
+
+
+    - We can add the pagination widget to our home page:
+
+        # app/templates/index.html
+
+        ...
+        {% include '_posts.html' %}
+
+        {% if pagination %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination, '.index') }}
+        </div>
+        {% endif %}
+
+
+    - Finally, we'll update the user page to do the same thing:
+
+        1. Update the /user view method in app/main/views.py
+        2. Update the user template app/templates/user.html
+
+
 
 - Rich-Text Posts with Markdown and Flask-PageDown
 
