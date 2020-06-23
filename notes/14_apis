@@ -1,0 +1,149 @@
+-----------------------------------------------------------------------
+|  CHAPTER 14 - APIs                                                  |
+-----------------------------------------------------------------------
+
+- Introduction to REST
+
+    - With more fully-featured client-side applications, the web server simply becomes
+        a 'web service' or 'API'.
+
+      Clients can communicate with web services using a variety of protocols, including
+        XML-RPC and SOAP.  REST has emerged as the favorite.
+
+
+    - Roy Fielding's PHD dissertation described the characteristics of a REST architecture:
+
+        1. Client-server 
+
+             Separation between client and server
+
+        2. Stateless
+
+             A client request must contain all the necessary information for it to be carried
+               out.  The server must store any state about the client that persists from one
+               request to the next.
+
+        3. Cache
+
+             Responses from the server can be labeled as cacheable or noncacheable so that 
+               clients (or intermediaries) can use a cache for optimization purposes.
+
+        4. Uniform interface
+
+             The protocol for accessing server resources must be consistent, well-defined, 
+               and standardized.
+
+        5. Layered system
+
+             Proxy servers, caches, or gateways can be inserted between clients and servers as
+               necessary to improve performance, reliability, and scalability.
+
+        6. Code-on-demand
+
+             Clients can optionally download code from the server to execute in their context.
+
+
+
+- Resources are Everything
+
+    - A 'resource' is an item of interest in the domain of the application.  Each resource must
+        have a unique identifier.
+
+        /api/posts/12345
+
+
+    - An API can also define collection URLs that represent logical subsets of all the resources
+        in a class.
+
+        /api/posts/12345/comments/
+
+
+
+- Request Methods
+
+    - Here are the commonly used request methods:
+
+        GET    Individual resource URL
+                  - Obtain the resource.
+                  - Returns 200
+
+        GET    Resource collection URL
+                  - Obtain the collection of resources (or one page from it if the server 
+                      implements pagination).
+                  - Returns 200
+
+        POST   Resource collection URL
+                  - Create a new resource and add it to the collection. The server chooses the 
+                      URL of the new resource and returns it in a Location header in the response.
+                  - Returns 201
+
+        PUT    Individual resource URL
+                  - Modify an existing resource. Alternatively, this method can also be used to 
+                      create a new resource when the client can choose the resource URL.
+                  - Returns 200 or 204
+
+        DELETE  Individual resource URL
+                  - Delete a resource.
+                  - Returns 200 or 204
+
+        DELETE  Resource collection URL
+                  - Delete all resources in the collection.
+                  - Returns 200 or 204
+
+
+
+- Request and Response Bodies
+
+    - Resources are sent back and forth between clients and servers in the requests and
+        responses of the body.  The 'Content-Type' header is typically used to indicate
+        the format of the data in the body.
+
+
+    - JSON and XML can both be used, but JSON is much more common since it is more concise.
+
+      Note the use of fully qualified URLs for the relationships:
+
+        {
+            "self_url": "http://www.example.com/api/posts/12345",
+            "title": "Writing RESTful APIs in Python",
+            "author_url": "http://www.example.com/api/users/2",
+            "body": "... text of the article here ...",
+            "comments_url": "http://www.example.com/api/posts/12345/comments"
+        }
+
+
+
+- Versioning
+
+    - When client applications are developed independently from the server side, we need
+        to be more careful about updates.
+
+      Web services need to be more tolerant than other web applications and must be able to
+        work with old versions of their clients.  A common solution is to give web services
+        a version, which is added to all URLs defined that version of the application.
+
+        /api/v1/posts/
+
+
+    - Older service versions can be deprecated and later removed once all clients have
+        successfully migrated.
+
+
+
+- Creating an API Blueprint
+
+- Error Handling
+
+- User Authentication with Flask-HTTPAuth
+
+- Token-Based Authentication
+
+- Serializing Resources to and from JSON
+
+- Implementing Resource Endpoints
+
+- Flasky API Resources
+
+- Pagination of Large Resource Collections
+
+- Testing Web Services with httpie
