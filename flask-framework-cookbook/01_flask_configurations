@@ -1,0 +1,146 @@
+-----------------------------------------------------------------------
+|  CHAPTER 1 - FLASK CONFIGURATIONS                                   |
+-----------------------------------------------------------------------
+
+- Book Contents
+
+    1. Flask Configuration
+
+         A. Setting up environment with virtualenv
+         B. Handling basic configurations
+         C. Configuring using class-based settings
+         D. Organizing static files
+         E. Being deployment-specific with instance folders
+         F. Composition of views and models
+         G. Creating a modular web app with blueprints
+         H. Making a Flask app installable using setuptools
+
+    2. Templating with Jinja2
+
+         A. Bootstrapping the recommended layout
+         B. Implementing block composition and layout inheritance
+         C. Creating a custom context processor
+         D. Creating a custom Jinja2 filter
+         E. Creating a custom macro for forms
+         F. Advanced date and time formatting
+
+    3. Data Modeling in Flask
+
+         A. Creating a SQLAlchemy DB instance
+         B. Creating a basic product model
+         C. Creating a relational category model
+         D. Migrating databases using Alembic and Flask-Migrate
+         E. Indexing model data with Redis
+         F. Opting for the NoSQL way with MongoDB
+
+    4. Working with Views
+
+         A. Writing function-based views and URL routes
+         B. Writing class-based views
+         C. Implementing URL routing and product-based pagination
+         D. Rendering to templates
+         E. Dealing with XHR requests
+         F. Using decorators to handle requests beautifully
+         G. Creating custom 404 and 500 handlers
+         H. Flashing messages for better user feedback
+         I. Implementing SQL-based searching
+
+    5. Webforms with WTForms
+
+         A. Representing SQLAlchemy model data as a form
+         B. Validating fields on the server side
+         C. Creating a common forms set
+         D. Creating custom fields and validation
+         E. Creating a custom widget
+         F. Uploading files via forms
+         G. Protecting applications from CSRF
+
+    6. Authenticating in Flask
+
+         A. Creating a simple session-based authentication
+         B. Authenticating using the Flask-Login extension
+         C. Using Facebook for authentication
+         D. Using Google for authentication
+         E. Using Twitter for authentication
+         F. Authenticating with LDAP
+
+    7. RESTful API Building
+
+         A. Creating a class-based REST interface
+         B. Creating an extension-based REST interface
+         C. Creating a complete RESTful API
+
+    8. Admin Interface for Flask Apps
+
+         A. Creating a simple CRUD interface
+         B. Using the Flask-Admin extension
+         C.  Registering models with Flask-Admin
+         D. Creating custom forms and actions
+         E. Using a WYSIWYG editor for textarea integration
+         F. Creating user roles
+
+    9. Internationalization and Localization
+
+         A. Adding a new language
+         B. Implementing lazy evaluation and the gettext/ngettext functions
+         C. Implementing the global language switching action
+
+    10. Debugging, Error Handling, and Testing
+
+         A. Setting up basic file logging
+         B. Sending emails on the occurrence of errors
+         C. Using Sentry to monitor exceptions
+         D. Debugging with pdb
+         E. Creating our first simple test
+         F. Writing more tests for views and logic
+         G. Nose library integration
+         H. Using mocking to avoid real API access
+         I. Determining test coverage
+         J. Using profiling to find bottlenecks
+
+    11. Deployment and Post-Deployment
+
+         A. Deploying with Apache
+         B. Deploying with uWSGI and Nginx
+         C. Deploying with Gunicorn and Supervisor
+         D. Deploying with Tornado
+         E. Using S3 storage for file uploads
+         F. Deploying with Heroku
+         G. Deploying with AWS Elastic Beanstalk
+         H. Managing and monitoring application performance&#xA0;with New Relic
+
+    12. Microservices and Containers
+
+         A. Containerization with Docker
+         B. Orchestrating containers with Kubernetes
+         C. Going serverless with Zappa on AWS Lambda
+
+    13. Other Tips and Tricks
+
+         A. Implementing full-text search with Whoosh
+         B. Implementing full-text search with Elasticsearch
+         C. Working with signals
+         D. Using caching with your application
+         E. Implementing email support for Flask applications
+         F. Understanding asynchronous operations
+         G. Working with Celery
+
+
+
+- Flask Configurations
+
+- Setting Up Environment with virtualenv
+
+- Handling Basic Configurations
+
+- Configuring Using Class-Based Settings
+
+- Organizing Static Files
+
+- Being Deployment-Specific with Instance Folders
+
+- Composition of Views and Models
+
+- Creating a Modular Web App with Blueprints
+
+- Making a Flask App Installable Using setuptools
