@@ -202,7 +202,66 @@
 
 - Handling Basic Configurations
 
+    - In Flask, a configuration is done on an attribute named 'config' of the 'Flask' object.
+        The 'config' attribute is a subclass of a dictionary.
+
+
+    - For instance, to run our application in debug mode:
+
+        app = Flask(__name__)
+        app.config['DEBUG'] = True
+
+      In newer versions of Flask, we can also set an environment variable, 'export FLASK_DEBUG=1'
+        and then run the application using 'flask run'.  Enabling this mode causes the server
+        to reload itself upon code changes and enables the Werkzeug debugger.
+
+
+    - As the application grows larger, there is a need to manage the application's configuration
+        in separate files.  There are a few ways to do this:
+
+        # From a .cfg Python config file
+        app.config.from_pyfile('myconfig.cfg')
+
+        # From an object
+        app.config.from_objecct('myapp.default_settings')
+
+        # Load from the same file in which the app is run
+        app.config.from_object(__name__)
+
+        # From an environment variable
+        app.config.from_envvar('PATH_TO_CONFIG_FILE')
+
+
+
 - Configuring Using Class-Based Settings
+
+    - An interesting way of laying out configurations for different modes can be done using
+        classes and inheritance.  
+
+        class BaseConfig(object): 
+            SECRET_KEY = 'A random secret key' 
+            DEBUG = True 
+            TESTING = False 
+            NEW_CONFIG_VARIABLE = 'my value' 
+         
+        class ProductionConfig(BaseConfig): 
+            DEBUG = False 
+            SECRET_KEY = open('/path/to/secret/file').read() 
+         
+        class StagingConfig(BaseConfig): 
+            DEBUG = True 
+         
+        class DevelopmentConfig(BaseConfig): 
+            DEBUG = True 
+            TESTING = True 
+            SECRET_KEY = 'Another random secret key'
+
+
+    - Note that we can use any of the classes using the 'from_object()' method.
+
+        app.config.from_object('configuration.DevelopmentConfig')
+
+
 
 - Organizing Static Files
 
