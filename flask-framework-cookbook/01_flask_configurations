@@ -129,7 +129,76 @@
 
 - Flask Configurations
 
+    - In the simplest possible case, we can create a minimal Flask application:
+
+        # app.py
+        from flask import Flask 
+        app = Flask(__name__) 
+         
+        @app.route('/') 
+        def hello_world(): 
+            return 'Hello to the World of Flask!' 
+         
+        if __name__ == '__main__': 
+            app.run() 
+
+
+    - Now, we need to install Flask:
+
+        $ pip install Flask
+
+
+    - We can run the application:
+
+        $ python app.py
+
+
+    - Alternatively, we can define the 'FLASK_APP' environment variable and use the 
+        'flask run' command.
+
+        $ export FLASK_APP=app.py
+        $ flask run
+
+
+
 - Setting Up Environment with virtualenv
+
+    - First, install virtualenv and create a new environment:
+
+        $ pip install virtualenv
+        $ virtualenv my_flask_env
+
+
+    - Now, activate the new environment and install Flask:
+
+        $ cd my_flask_env
+        $ source bin/activate
+        $ pip3 install flask
+
+
+    - To make our lives easier, we can use 'virtualenvwrapper', which is a wrapper over 
+        virtualenv that makes handling of multiple virtualenvs easier.
+
+        # Deactivate the current environment so that virtualenvwrapper is installed globally
+        $ deactivate
+
+        # Now install virtualenvwrapper globally
+        $ pip install virtualenvwrapper
+        $ export WORKON_HOME=~/workspace
+        $ source /usr/local/bin/virtualenvwrapper.sh
+
+
+        # Create a virtualenv and install Flask
+        $ mkvirtualenv my_flask_env
+        $ pip install flask
+
+        # Activate virtualenv with virtualenvwrapper
+        $ workon my_flask_env
+
+        # Deactivate virtualenv
+        $ deactivate
+
+
 
 - Handling Basic Configurations
 
