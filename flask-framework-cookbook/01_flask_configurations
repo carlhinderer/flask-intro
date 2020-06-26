@@ -297,6 +297,42 @@
 
 - Being Deployment-Specific with Instance Folders
 
+    - Flask provides instance folders for yet another method for configuration.  While
+        config files can provide an environment-specific set of configurations, instance
+        folders allow us to have environment-specific database files, session files, cache
+        files, etc.
+
+
+    - By default, the instance folder is picked up automatically if we have a folder named
+        'instance' at the application level.
+
+        my_app/ 
+            - app.py 
+            - instance/ 
+                - config.cfg 
+
+
+    - If we want to use a different location, we can define an explicit path instead.
+
+        # Define explicit path for instance folder
+        app = Flask( 
+            __name__, instance_path='/absolute/path/to/instance/folder' 
+        )
+
+        # Load the config file from the instance folder
+        app = Flask(__name__, instance_relative_config=True)
+
+
+    - Here is how this will work together:
+
+        app = Flask( 
+            __name__, instance_path='path/to/instance/folder', 
+            instance_relative_config=True 
+        ) 
+        app.config.from_pyfile('config.cfg', silent=True)
+
+
+
 - Composition of Views and Models
 
 - Creating a Modular Web App with Blueprints
