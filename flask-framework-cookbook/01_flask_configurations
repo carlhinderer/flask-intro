@@ -265,6 +265,36 @@
 
 - Organizing Static Files
 
+    - Flask recommends a specific way of organizing static files:
+
+        my_app/ 
+            - app.py 
+            - config.py 
+            - __init__.py 
+            - static/ 
+               - css/ 
+                - js/ 
+                - images/ 
+                    - logo.png 
+
+
+    - To render these in a template:
+
+        <img src='/static/images/logo.png'>
+
+
+    - We can also define a different default folder to look for static assets in.
+
+        app = Flask(__name__, static_folder='/path/to/static/folder')
+
+
+    - To maintain flexibility, it is a good idea to use 'url_for' instaed of explicitly
+        defining routes to static assets.
+
+        <img src="{{ url_for('static', filename='logo.png') }}">
+
+
+
 - Being Deployment-Specific with Instance Folders
 
 - Composition of Views and Models
