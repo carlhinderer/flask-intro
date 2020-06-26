@@ -242,6 +242,103 @@
 
 - User Authentication with Flask-HTTPAuth
 
+    - RESTful web services are stateless, which means the server is not allowed to 'remember'
+        anything about the client between requests.  Clients need to provide all information 
+        in the request itself, including user credentials.
+
+
+    - The current login functionality stores data in the user sesssion, which Flask stores by
+        default in a client-side cookie.
+
+      This does avoid storing any information about clients on the server side, but using 
+        cookies is a grey area is and generally considered a bad design choice for APIs.
+
+
+    - Note that REST was designed to be stateless because then it can scale very easily.  If
+        servers store information about clients, it is necessary to:
+
+        1. Ensure that the same server always gets requests from a given client
+        2. Use shared storage for client data
+
+      Both are complex problems to solve that do not exist when the server is stateless.
+
+
+    - Because REST is based on HTTP, 'HTTP Authenticaion' is the preferred method to send 
+        credentials, either in Basic or Digest flavor.  User credentials are included in an
+        'Authorization' header with all requests.
+
+      Note that because the credentials are sent with every request, it is extremely important
+        that HTTPS is used.
+
+
+
+- Using Flask-HTTPAuth
+
+    - The HTTP authentication protocol is simple enough to implement directly, but the 
+        Flask-HTTPAuth provides a convenient wrapper that hides the protocol details. 
+
+        $ pip install flask-httpauth
+
+
+    - To initialize the extension for HTTP Basic authentication:
+
+        # app/api/authentication.py
+
+        from flask_httpauth import HTTPBasicAuth
+        auth = HTTPBasicAuth()
+        
+        @auth.verify_password
+        def verify_password(email, password):
+            if email == '':
+                return False
+            user = User.query.filter_by(email = email).first()
+            if not user:
+                return False
+            g.current_user = user
+            return user.verify_password(password)
+
+
+    - Note that the authentication callback saves the authenticated user in the Flask's 'g'
+        context variable so that the view function can access it later.
+
+
+    - When the authentican credentials are invalid, the server returns a 401 code to the client.
+        HTTPAuth generates a response with this status code by default, but to ensure the error
+        message is consistent with our other errors, we'll customize it.
+
+
+        # app/api/authentication.py
+        from .errors import unauthorized
+
+        @auth.error_handler
+        def auth_error():
+            return unauthorized('Invalid credentials')
+
+
+    - To protect each route, the 'auth.login' decorator is used:
+
+        @api.route('/posts/')
+        @auth.login_required
+        def get_posts():
+            pass 
+
+
+    - In our case, all of the routes in the blueprint need to be protected in the same
+        way, so we can include the 'login_required' decorator in the 'before_request'
+        handler.
+
+        # app/api/authentication.py
+        from .errors import forbidden
+
+        @api.before_request
+        @auth.login_required
+        def before_request():
+            if not g.current_user.is_anonymous and \
+                    not g.current_user.confirmed:
+                return forbidden('Unconfirmed account')
+
+
+
 - Token-Based Authentication
 
 - Serializing Resources to and from JSON
