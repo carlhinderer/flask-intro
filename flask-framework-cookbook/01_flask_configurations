@@ -335,6 +335,79 @@
 
 - Composition of Views and Models
 
+    - For an example of adding more structure to our applications, we'll use this:
+
+        flask_app/ 
+            - run.py 
+            - my_app/ 
+                - __init__.py 
+                - hello/ 
+                    - __init__.py 
+                    - models.py 
+                    - views.py
+
+
+        # run.py
+        -------------------------------------------
+        from my_app import app 
+        app.run(debug=True)
+
+
+        # my_app/__init.py__
+        -------------------------------------------
+        from flask import Flask 
+        app = Flask(__name__) 
+        import my_app.hello.views 
+
+
+        # my_app/hello/__init.py__
+        -------------------------------------------
+        # No content. 
+        # We need this file just to make this folder a python module. 
+
+
+        # my_app/hello/models.py
+        -------------------------------------------
+        MESSAGES = { 
+            'default': 'Hello to the World of Flask!', 
+        }
+
+
+        # my_app/hello/views.py
+        -------------------------------------------
+        from my_app import app 
+        from my_app.hello.models import MESSAGES 
+         
+        @app.route('/') 
+        @app.route('/hello') 
+        def hello_world(): 
+            return MESSAGES['default'] 
+        
+        @app.route('/show/<key>') 
+        def get_message(key): 
+            return MESSAGES.get(key) or "%s not found!" % key 
+          
+        @app.route('/add/<key>/<message>') 
+        def add_or_update_message(key, message): 
+            MESSAGES[key] = message 
+            return "%s Added/Updated" % 
+
+
+
+    - Note that we have a circular import between 'my_app/__init.py__' and 'hello/views.py'.
+        This isn't an issue, since we won't be using views in '__init.py__'. 
+
+
+    - Now we can run the app:
+
+        $ python run.py
+
+      And view our routes in the browser:
+
+        http://localhost:5000/show/default
+
+
+
 - Creating a Modular Web App with Blueprints
 
 - Making a Flask App Installable Using setuptools
