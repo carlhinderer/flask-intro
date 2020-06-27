@@ -298,6 +298,31 @@
 
 - Creating a custom macro for forms
 
+    - Macros allow us to write reusable pieces of HTML blocks.  They are analagous to 
+        functions.  We can pass arguements to them.  
+
+
+    - Here is a macro that creates input fields when called.
+
+        # _helpers.html
+        -------------------------------------------
+        {% macro render_field(name, class='', value='', type='text') -%} 
+            <input type="{{ type }}" name="{{ name }}" class="{{ class }}" 
+                value="{{ value }}"/> 
+        {%- endmacro %} 
+
+
+    - Then, we can use the macro:
+
+        {% from '_helpers.html' import render_field %} 
+
+        <fieldset> 
+            {{ render_field('username', 'icon-user') }} 
+            {{ render_field('password', 'icon-key', type='password') }} 
+        </fieldset>
+
+
+
 - Advanced date and time formatting
 
 
