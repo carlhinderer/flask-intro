@@ -1,0 +1,62 @@
+-----------------------------------------------------------------------
+|  CHAPTER 2 - TEMPLATING WITH JINJA2                                 |
+-----------------------------------------------------------------------
+
+- Bootstrapping the recommended layout
+
+    - By default, Flask expects templates to be placed inside a folder named 'templates'
+        at the application root level.  If this folder is present, Flask will automatically
+        make the contents of this folder available for the 'render_template' method.
+
+
+    - We'll add a 'templates' folder to our project.
+
+        flask_app/ 
+            - run.py 
+            my_app/ 
+                - __init__.py 
+                - hello/ 
+                    - __init__.py 
+                    - views.py 
+                - templates 
+
+
+    - Here is new view method, which renders a template.  It looks for a 'user' argument in 
+        the query string.
+
+        # my_app/hello/views.py
+        -------------------------------------------
+        from flask import render_template, request 
+
+        @hello.route('/') 
+        @hello.route('/hello') 
+        def hello_world(): 
+            user = request.args.get('user', 'Shalabh') 
+            return render_template('index.html', user=user)
+
+
+    - Here is the template rendered from the view method:
+
+        # my_app/templates/index.html
+        -------------------------------------------
+        <html> 
+          <head> 
+            <title>Flask Framework Cookbook</title> 
+          </head> 
+          <body> 
+            <h1>Hello {{ user }}!</h1> 
+            <p>Welcome to the world of Flask!</p> 
+          </body> 
+        </html>
+
+
+
+- Implementing block composition and layout inheritance
+ 
+- Creating a custom context processor
+
+- Creating a custom Jinja2 filter
+
+- Creating a custom macro for forms
+
+- Advanced date and time formatting
