@@ -236,6 +236,29 @@
 
 - Creating a custom context processor
 
+    - We want to avoid putting programming logic in templates, so if we have some value
+        we want to calculate, we can put it in a Python method and return the value to
+        the template.  This method is called a 'context processor'.
+
+
+    - Here is our custom context processor.
+
+        # my_app/product/views.py
+        -------------------------------------------
+        @product_blueprint.context_processor
+        def product_name_processor(): 
+            def full_name(product): 
+                return '{0} / {1}'.format(product['category'], 
+                   product['name']) 
+            return {'full_name': full_name}
+
+
+    - Then we can use the context processor.
+
+        {{ full_name(product) }} 
+
+
+
 - Creating a custom Jinja2 filter
 
 - Creating a custom macro for forms
