@@ -410,4 +410,52 @@
 
 - Creating a Modular Web App with Blueprints
 
+    - A 'blueprint' is a Flask concept that helps make large applications modular.  This
+        keeps application dispatching simple by providing a central place to register all
+        components in an application.
+
+      A blueprint looks like an application or a pluggable app, but it is not.  A blueprint
+        is acutally a set of operations that can be registered on an application.
+
+
+    - Here, we will rewrite the previous application in a way that makes it much more modular
+        and extensible.
+
+
+        # my_app/__init.py__
+        -------------------------------------------
+        from flask import Flask 
+        from my_app.hello.views import hello 
+         
+        app = Flask(__name__) 
+        app.register_blueprint(hello)
+
+
+        # my_app/hello/views.py
+        -------------------------------------------
+        from flask import Blueprint 
+        from my_app.hello.models import MESSAGES 
+         
+        hello = Blueprint('hello', __name__) 
+        
+        @hello.route('/') 
+        @hello.route('/hello') 
+        def hello_world(): 
+            return MESSAGES['default'] 
+         
+        @hello.route('/show/<key>') 
+        def get_message(key): 
+            return MESSAGES.get(key) or "%s not found!" % key 
+         
+        @hello.route('/add/<key>/<message>') 
+        def add_or_update_message(key, message): 
+            MESSAGES[key] = message 
+            return "%s Added/Updated" % key
+
+
+    - Here, we eliminate the circular dependency, since we don't need to import the application
+        object into the views any more.  
+        
+
+
 - Making a Flask App Installable Using setuptools
