@@ -261,6 +261,41 @@
 
 - Creating a custom Jinja2 filter
 
+    - We can write a filter to accomplish the same logic in a cleaner way.  Here is
+        the filter:
+
+        @product_blueprint.app_template_filter('full_name') 
+        def full_name_filter(product): 
+            return '{0} / {1}'.format(product['category'], product['name']) 
+
+
+    - To use the filter:
+
+        {{ product | full_name }}
+
+
+    - In another example, we use the 'ccy' external library to format currency.
+
+        $ pip install ccy
+
+
+        # my_app/__init__.py
+        -------------------------------------------
+        import ccy 
+        from flask import request 
+         
+        @app.template_filter('format_currency') 
+        def format_currency_filter(amount): 
+            currency_code = ccy.countryccy(request.accept_languages.best[-2:]) 
+            return '{0} {1}'.format(currency_code, amount)
+
+
+    - To use this filter:
+
+        <h3>{{ product['price'] | format_currency }}</h3>
+
+
+
 - Creating a custom macro for forms
 
 - Advanced date and time formatting
