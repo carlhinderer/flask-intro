@@ -1,0 +1,81 @@
+-----------------------------------------------------------------------
+|  CHAPTER 3 - DATA MODELING IN FLASK                                 |
+-----------------------------------------------------------------------
+
+- Creating a SQLAlchemy DB instance
+
+- Creating a basic product model
+
+- Creating a relational category model
+
+- Migrating databases using Alembic and Flask-Migrate
+
+
+
+- Indexing model data with Redis
+
+    - There may be features we might want to implement, but do not want persistent storage
+        for them.  So, we would like to have these stored in cache-like storage for some
+        time and then vanish.
+
+      For example, we could show a list of the recently visited products to the visitors on
+        the website.  Here, we'll see how Redis can be used as an effective cache to store
+        non-persistent data that can be accessed at high speed.
+
+
+    - First, we'll need to add Redis using the instructions here:
+
+        https://redis.io/topics/quickstart
+
+
+    - Next, we'll install the connector for Redis.
+
+        $ pip install redis
+
+
+    - And we can open a connection to Redis.
+
+        # my_app/__init__.py
+        -------------------------------------------
+        from redis import Redis 
+        redis = Redis()
+
+
+    - We will maintain a set in Redis, which will store the products visited recently. This 
+        will be populated whenever we visit a product. The entry will expire in 10 minutes.
+
+
+        # my_app/views.py
+        -------------------------------------------
+        from my_app import redis 
+ 
+        @catalog.route('/product/<id>') 
+        def product(id): 
+            product = Product.query.get_or_404(id) 
+            product_key = 'product-%s' % product.id 
+            redis.set(product_key, product.name) 
+            redis.expire(product_key, 600) 
+            return 'Product - %s, $%s' % (product.name, product.price)
+
+
+    - Now, we'll look for keys that are still alive in the cache and then fetch the corresponding
+        products and return them.
+
+        from my_app import redis 
+ 
+        @catalog.route('/product/<id>') 
+        def product(id): 
+            product = Product.query.get_or_404(id) 
+            product_key = 'product-%s' % product.id 
+            redis.set(product_key, product.name) 
+            redis.expire(product_key, 600) 
+            return 'Product - %s, $%s' % (product.name, product.price)
+
+
+    - An entry is added to the store whenever a user visits a product, and the entry is kept there
+        for 600 seconds.  If the product is visited again in the next 10 minutes, it will be reset
+        to 10 minutes again.
+
+
+
+- Opting for the NoSQL way with MongoDB
