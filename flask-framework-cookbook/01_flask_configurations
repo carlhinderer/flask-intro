@@ -353,14 +353,14 @@
         app.run(debug=True)
 
 
-        # my_app/__init.py__
+        # my_app/__init__.py
         -------------------------------------------
         from flask import Flask 
         app = Flask(__name__) 
         import my_app.hello.views 
 
 
-        # my_app/hello/__init.py__
+        # my_app/hello/__init__.py
         -------------------------------------------
         # No content. 
         # We need this file just to make this folder a python module. 
@@ -394,8 +394,8 @@
 
 
 
-    - Note that we have a circular import between 'my_app/__init.py__' and 'hello/views.py'.
-        This isn't an issue, since we won't be using views in '__init.py__'. 
+    - Note that we have a circular import between 'my_app/__init__.py' and 'hello/views.py'.
+        This isn't an issue, since we won't be using views in '__init__.py'. 
 
 
     - Now we can run the app:
@@ -422,7 +422,7 @@
         and extensible.
 
 
-        # my_app/__init.py__
+        # my_app/__init__.py
         -------------------------------------------
         from flask import Flask 
         from my_app.hello.views import hello 

@@ -325,6 +325,71 @@
 
 - Advanced date and time formatting
 
+    - It is a good strategy to store timestamps in UTC, then let the client side render them,
+        since browsers have the time zone information of the user.
+
+      We will use Moment.js for this purpose.
 
 
--------------------------------------------
+    - First, we'll need to add Moment.js to our static assets.  We'll download 'moment.min.js'
+        and put it in our '/static/js' folder.  
+
+      Then, we need to add the script with our other JS libraries.
+
+        # app/templates/base.html
+        -------------------------------------------
+        <script src="{{ url_for('static', filename='js/moment.min.js') }}"></script> 
+
+
+    - Now, we can play with Moment.js in the browser console.
+
+        >>> moment().calendar(); 
+        "Today at 1:35 P"
+
+        >>> moment().endOf('day').fromNow(); 
+        "in 10 hours"
+
+        >>> moment().format('LLLL'); 
+        "Monday, December 17, 2018 1:35 PM"
+
+
+    - We'll write a wrapper and use it via the Jinja2 environment variables.
+
+        from jinja2 import Markup 
+ 
+        class momentjs(object): 
+            def __init__(self, timestamp): 
+                self.timestamp = timestamp 
+         
+            # Wrapper to call moment.js method 
+            def render(self, format): 
+                return Markup("<script>\ndocument.write(moment(\"%s\").%s)
+                   ;\n</script>" % (self.timestamp.strftime("%Y-%m-
+                   %dT%H:%M:%S"), format)) 
+         
+            # Format time 
+            def format(self, fmt): 
+                return self.render("format(\"%s\")" % fmt) 
+         
+            def calendar(self): 
+                return self.render("calendar()") 
+         
+            def fromNow(self): 
+                return self.render("fromNow()")
+
+
+    - Now, we'll add it to our 'app.py' file.
+
+        # app.py
+        -------------------------------------------
+        # Set jinja template global 
+        app.jinja_env.globals['momentjs'] = momentjs
+
+
+    - Now, we can use the class in templates.
+
+        <p>Current time: {{ momentjs(timestamp).calendar() }}</p> 
+        <br/> 
+        <p>Time: {{momentjs(timestamp).format('YYYY-MM-DD HH:mm:ss')}}</p> 
+        <br/> 
+        <p>From now: {{momentjs(timestamp).fromNow()}}</p>
