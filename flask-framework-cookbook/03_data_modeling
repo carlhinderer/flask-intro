@@ -36,6 +36,108 @@
 
 - Creating a basic product model
 
+    - Our new application's directory structure will look like:
+
+        flask_catalog/ 
+            - run.py
+            my_app/ 
+                - __init__.py 
+                catalog/ 
+                    - __init__.py 
+                    - views.py 
+                    - models.py 
+
+
+    - First, we modify the application configuration file to add the SQLite connection string
+        and register the blueprint for the catalog.  Then, we create the tables if they don't
+        already exist.
+
+        # flask_catalog/my_app/__init__.py
+        -------------------------------------------
+        from flask import Flask 
+        from flask_sqlalchemy import SQLAlchemy 
+         
+        app = Flask(__name__) 
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db' 
+        db = SQLAlchemy(app) 
+         
+        from my_app.catalog.views import catalog 
+        app.register_blueprint(catalog) 
+         
+        db.create_all()
+
+
+    - Now, we create the Product model.
+
+        # flask_catalog/my_app/catalog/models.py
+        -------------------------------------------
+        from my_app import db 
+ 
+        class Product(db.Model): 
+            id = db.Column(db.Integer, primary_key=True) 
+            name = db.Column(db.String(255)) 
+            price = db.Column(db.Float) 
+         
+            def __init__(self, name, price): 
+                self.name = name 
+                self.price = price 
+         
+            def __repr__(self): 
+                return '<Product %d>' % self.id
+
+
+    - Finally, we'll add the views.
+
+        # flask_catalog/my_app/catalog/views.py
+        -------------------------------------------
+        from flask import request, jsonify, Blueprint 
+        from my_app import db 
+        from my_app.catalog.models import Product 
+         
+        catalog = Blueprint('catalog', __name__) 
+         
+        @catalog.route('/') 
+        @catalog.route('/home') 
+        def home(): 
+            return "Welcome to the Catalog Home."
+
+        @catalog.route('/product/<id>') 
+        def product(id): 
+            product = Product.query.get_or_404(id) 
+            return 'Product - %s, $%s' % (product.name, product.price)
+
+        @catalog.route('/products') 
+        def products(): 
+            products = Product.query.all() 
+            res = {} 
+            for product in products: 
+                res[product.id] = { 
+                    'name': product.name, 
+                    'price': str(product.price) 
+                } 
+            return jsonify(res)
+
+        @catalog.route('/product-create', methods=['POST',]) 
+        def create_product(): 
+            name = request.form.get('name') 
+            price = request.form.get('price') 
+            product = Product(name, price) 
+            db.session.add(product) 
+            db.session.commit() 
+            return 'Product created.'
+
+
+    - Now, we can test it.
+
+        # Install requests module
+        $ pip install requests
+
+        >>> import requests
+        >>> requests.post('http://127.0.0.1:5000/product-create', 
+                          data={'name': 'iPhone 5S', 'price': '549.0'})
+
+
+
 - Creating a relational category model
 
 - Migrating databases using Alembic and Flask-Migrate
