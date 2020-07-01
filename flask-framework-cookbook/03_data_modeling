@@ -140,6 +140,98 @@
 
 - Creating a relational category model
 
+    - Let's say we want each product to have one category.
+
+        # models.py
+        -------------------------------------------
+        class Category(db.Model): 
+            id = db.Column(db.Integer, primary_key=True) 
+            name = db.Column(db.String(100)) 
+         
+            def __init__(self, name): 
+                self.name = name 
+         
+            def __repr__(self): 
+                return '<Category %d>' % self.id
+
+
+    - And we add the relationship to the Product model.
+
+        # models.py
+        -------------------------------------------
+        class Product(db.Model): 
+            ...
+            category_id = db.Column(db.Integer, db.ForeignKey('category.id')) 
+            category = db.relationship('Category', 
+                                       backref=db.backref('products', lazy='dynamic')) 
+         
+            def __init__(self, name, price, category): 
+                ... 
+                self.category = category
+
+
+    - Here are the view changes.
+
+        # views.py
+        -------------------------------------------
+        from my_app.catalog.models import Product, Category 
+ 
+        @catalog.route('/products') 
+        def products(): 
+            products = Product.query.all() 
+            res = {} 
+            for product in products: 
+                res[product.id] = { 
+                    'name': product.name, 
+                    'price': product.price, 
+                    'category': product.category.name 
+                } 
+            return jsonify(res) 
+
+        @catalog.route('/product-create', methods=['POST',]) 
+        def create_product(): 
+            name = request.form.get('name') 
+            price = request.form.get('price') 
+            categ_name = request.form.get('category') 
+            category = Category.query.filter_by(name=categ_name).first() 
+            if not category: 
+                category = Category(categ_name) 
+            product = Product(name, price, category) 
+            db.session.add(product) 
+            db.session.commit() 
+            return 'Product created.'
+
+
+    - Finally, we'll add new view methods for creating and listing categories.
+
+        # views.py
+        -------------------------------------------
+        @catalog.route('/category-create', methods=['POST',]) 
+        def create_category(): 
+            name = request.form.get('name') 
+            category = Category(name) 
+            db.session.add(category) 
+            db.session.commit() 
+            return 'Category created.'
+
+        @catalog.route('/categories') 
+        def categories(): 
+            categories = Category.query.all() 
+            res = {} 
+            for category in categories: 
+                res[category.id] = { 
+                    'name': category.name 
+                } 
+                for product in category.products: 
+                    res[category.id]['products'] = { 
+                        'id': product.id, 
+                        'name': product.name, 
+                        'price': product.price 
+                    } 
+            return jsonify(res)
+
+
+
 - Migrating databases using Alembic and Flask-Migrate
 
 
