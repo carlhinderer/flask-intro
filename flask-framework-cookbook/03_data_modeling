@@ -234,6 +234,43 @@
 
 - Migrating databases using Alembic and Flask-Migrate
 
+    - Alembic is a Python-based tool to manage database migrations and uses SQLAlchemy as
+        the underlying engine.  
+
+
+    - Flask-Migrate is a Flask extension that makes the process of using Alembic in Flask
+        applications even easier.
+
+        $ pip install Flask-Migrate
+
+
+    - Update the app definition to instantiate the migrations.
+
+        # my_app/__init__.py
+        -------------------------------------------
+        from flask import Flask 
+        from flask_sqlalchemy import SQLAlchemy 
+        from flask_migrate import Migrate, MigrateCommand 
+            app = Flask(__name__) 
+            app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db' 
+            db = SQLAlchemy(app) 
+            migrate = Migrate(app, db) 
+         
+        import my_app.catalog.views 
+        db.create_all()
+
+
+    - Now, to create the database:
+
+        # Initialize migrations
+        $ flask db init
+
+        # Create the migrations
+        $ flask db migrate
+
+        # Reflect the changes in the database
+        $ flask db upgrade
+
 
 
 - Indexing model data with Redis
