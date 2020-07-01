@@ -415,7 +415,7 @@
         components in an application.
 
       A blueprint looks like an application or a pluggable app, but it is not.  A blueprint
-        is acutally a set of operations that can be registered on an application.
+        is actually a set of operations that can be registered on an application.
 
 
     - Here, we will rewrite the previous application in a way that makes it much more modular

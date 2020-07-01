@@ -4,6 +4,36 @@
 
 - Creating a SQLAlchemy DB instance
 
+    - First, we need to install the SQLAlchemy interface for Flask.
+
+        $ pip install flask-sqlalchemy
+
+
+    - Then, we need to add a connection string for the database we want to use.
+
+        # Tell SQLAlchemy the location of the dataase
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ('DATABASE_URI') 
+
+        # SQLite connection string template
+        sqlite:////tmp/test.db 
+
+        # Postgres connection string template
+        postgresql://yourusername:yourpassword@localhost/yournewdb. 
+
+
+    - We configure our settings and create the database object.
+
+        # flask_app/my_app/__init__.py
+        -------------------------------------------
+        from flask import Flask 
+        from flask_sqlalchemy import SQLAlchemy 
+         
+        app = Flask(__name__) 
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db' 
+        db = SQLAlchemy(app)
+
+
+
 - Creating a basic product model
 
 - Creating a relational category model
