@@ -1,0 +1,65 @@
+-----------------------------------------------------------------------
+|  CHAPTER 4 - WORKING WITH VIEWS                                     |
+-----------------------------------------------------------------------
+
+- Writing function-based views and URL routes
+
+    - In earlier versions, Flask only had function-based views.  In later versions, 
+        Flask introduced the concept of pluggable views, which allows us to have classes
+        and then write methods in the classes.
+
+
+    - Here is a simple function-based view.  It looks for a parameter in the query string.
+
+        @app.route('/a-get-request') 
+        def get_request(): 
+            bar = request.args.get('foo', 'bar') 
+            return 'A simple Flask request where foo is %s' % bar
+
+
+    - Here is a simple POST request.  It looks for a parameter from the form submitted.
+
+        @app.route('/a-post-request', methods=['POST']) 
+        def post_request(): 
+            bar = request.form.get('foo', 'bar') 
+            return 'A simple Flask request where foo is %s' % bar
+
+
+    - Here, we combine GET and POST requests into a single view function.
+
+        @app.route('/a-request', methods=['GET', 'POST']) 
+        def some_request(): 
+            if request.method == 'GET': 
+                bar = request.args.get('foo', 'bar') 
+            else: 
+                bar = request.form.get('foo', 'bar') 
+            return 'A simple Flask request where foo is %s' % bar
+
+
+    - Sometimes, we want to have a URL map kind of pattern, where we define all the rules
+        in a single place rather than scattering them around the application.
+
+        def get_request(): 
+            bar = request.args.get('foo', 'bar') 
+            return 'A simple Flask request where foo is %s' % bar 
+        
+        app = Flask(__name__) 
+        app.add_url_rule('/a-get-request', view_func=get_request)
+
+
+
+- Writing class-based views
+
+- Implementing URL routing and product-based pagination
+
+- Rendering to templates
+
+- Dealing with XHR requests
+
+- Using decorators to handle requests beautifully
+
+- Creating custom 404 and 500 handlers
+
+- Flashing messages for better user feedback
+
+- Implementing SQL-based searching
