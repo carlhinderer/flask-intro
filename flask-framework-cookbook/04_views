@@ -50,6 +50,64 @@
 
 - Writing class-based views
 
+    - Flask introduced the concept of pluggable views in version 0.7.  This added a lot of 
+        flexibility to the existing implementation.
+
+
+    - Flask provides a class named 'View', which can be inherited in order to add custom
+        behavior.  Here is a simple GET request.
+
+        from flask.views import View 
+ 
+        class GetRequest(View): 
+            def dispatch_request(self): 
+                bar = request.args.get('foo', 'bar') 
+                return 'A simple Flask request where foo is %s' % bar 
+         
+        app.add_url_rule( 
+            '/a-get-request', view_func=GetRequest.as_view('get_request') 
+        ) 
+
+
+    - To accommodate both GET and POST requests, we can write the following code:
+
+        from flask.views import View 
+         
+        class GetPostRequest(View): 
+            methods = ['GET', 'POST'] 
+         
+            def dispatch_request(self): 
+                if request.method == 'GET': 
+                    bar = request.args.get('foo', 'bar') 
+                if request.method == 'POST': 
+                    bar = request.form.get('foo', 'bar') 
+                return 'A simple Flask request where foo is %s' % bar 
+         
+        app.add_url_rule( 
+            '/a-request', view_func=GetPostRequest.as_view('a_request') 
+        )
+
+
+    - There is also a way to just declare 'get' and 'post' methods inside a View class
+        and let Flask handle the rest.  To do this, we use the 'MethodView'.
+
+        from flask.views import MethodView 
+
+        class GetPostRequest(MethodView): 
+            def get(self): 
+                bar = request.args.get('foo', 'bar') 
+                return 'A simple Flask request where foo is %s' % bar 
+         
+            def post(self): 
+                bar = request.form.get('foo', 'bar') 
+                return 'A simple Flask request where foo is %s' % bar 
+         
+        app.add_url_rule( 
+            '/a-request', view_func=GetPostRequest.as_view('a_request') 
+        )
+
+
+
 - Implementing URL routing and product-based pagination
 
 - Rendering to templates
