@@ -108,7 +108,53 @@
 
 
 
-- Implementing URL routing and product-based pagination
+- Implementing URL routing
+
+    - Let's say we this URL route.  It will return a string from the URL.
+
+        @app.route('/test/<name>') 
+        def get_name(name): 
+            return name
+
+
+    - To validate the length of the argument:
+
+        @app.route('/test/<string(minlength=2,maxlength=3):code>') 
+        def get_name(code): 
+            return code
+
+
+    - To accept an integer as an argument:
+
+        @app.route('/test/<int:age>') 
+        def get_age(age): 
+            return str(age)
+
+
+    - To validate the minimum and maximum accepted integer:
+
+        @app.route('/test/<int(min=18,max=99):age>')
+
+
+
+- Product-Based Pagination
+
+    - Let's modify the 'products()' method to list projects to support pagination.
+
+        @catalog.route('/products') 
+        @catalog.route('/products/<int:page>') 
+        def products(page=1): 
+            products = Product.query.paginate(page, 10).items 
+            res = {} 
+            for product in products: 
+                res[product.id] = { 
+                    'name': product.name, 
+                    'price': product.price, 
+                    'category': product.category.name 
+                } 
+            return jsonify(res)
+
+
 
 - Rendering to templates
 
