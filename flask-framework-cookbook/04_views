@@ -303,6 +303,45 @@
 
 - Using decorators to handle requests beautifully
 
+    - We want to avoid having to check whether each request is an XHR, since it kills
+        readability.  So, we'll create a decorator to handle it.
+
+
+    - Here is our custom decorator.  It checks whether the request is xhr, and either renders
+        the template or returns JSON data.
+
+
+        from functools import wraps 
+ 
+        def template_or_json(template=None): 
+            """"Return a dict from your view and this will either 
+            pass it to a template or render json. Use like: 
+          
+            @template_or_json('template.html') 
+            """ 
+            def decorated(f): 
+                @wraps(f) 
+                def decorated_fn(*args, **kwargs): 
+                    ctx = f(*args, **kwargs) 
+                    if request.is_xhr or not template: 
+                        return jsonify(ctx) 
+                    else: 
+                        return render_template(template, **ctx) 
+                return decorated_fn 
+            return decorated
+
+
+    - Now, we can rewrite our 'home()' method to use the decorator.
+
+         @app.route('/') 
+         @app.route('/home') 
+         @template_or_json('home.html') 
+         def home(): 
+             products = Product.query.all() 
+             return {'count': len(products)}
+
+
+
 - Creating custom 404 and 500 handlers
 
 - Flashing messages for better user feedback
