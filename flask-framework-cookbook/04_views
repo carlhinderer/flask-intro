@@ -241,6 +241,66 @@
 
 - Dealing with XHR requests
 
+    - Asynchronous XmlHttpRequests have been getting more and more prominent with the rise
+        of SPA frameworks like Angular, Vue, and React.
+
+
+    - The Flask 'request' object has a flag called 'is_xhr' which tells us whether the request
+        made is an XHR.  If it is, the called typically expects the result in JSON.  
+
+      For instance, if we get an XHR to the home route, we assume the client wants to reload
+        the product list.
+
+        from flask import request, render_template, jsonify 
+ 
+        @catalog.route('/') 
+        @catalog.route('/home') 
+        def home(): 
+            if request.is_xhr: 
+                products = Product.query.all() 
+                return jsonify({ 
+                    'count': len(products) 
+                }) 
+            return render_template('home.html')
+
+
+    - Next, we add a 'scripts' block to our base template.
+
+        # my_app/templates/base.html
+        -------------------------------------------
+        {% block scripts %}
+        {% endblock %}
+
+
+    - Finally, we modify our home template, which checks whether the request is an XHR
+        request.  If it is, it fetches the list of products from the database and returns
+        it as a JSON object.  A badge is shown which displays the number of products in
+        the database.
+
+        # my_app/templates/home.html
+        -------------------------------------------
+        {% extends 'base.html' %} 
+ 
+        {% block container %} 
+          <h1>Welcome to the Catalog Home</h1> 
+          <a href="{{ url_for('catalog.products') }}" id="catalog_link"> 
+            Click here to see the catalog 
+          </a> 
+        {% endblock %} 
+         
+        {% block scripts %} 
+        <script> 
+        $(document).ready(function(){ 
+          $.getJSON("/home", function(data) { 
+            $('#catalog_link').append('<span class="badge">' + data.count 
+               + '</span>'); 
+          }); 
+        }); 
+        </script> 
+        {% endblock %} 
+
+
+
 - Using decorators to handle requests beautifully
 
 - Creating custom 404 and 500 handlers
