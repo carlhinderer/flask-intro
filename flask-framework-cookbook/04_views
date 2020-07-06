@@ -370,4 +370,97 @@
 
 - Flashing messages for better user feedback
 
+    - In order to use flash message capabilities, we must ensure we have a secret key
+        configured for the application.  The session depends on the secret key, and the
+        application will error out while flashing if it is not present.
+
+        # my_app/__init__.py
+        -------------------------------------------
+        app.secret_key = 'some_random_key'
+
+
+    - Now, we'll add the ability to create a product using a form.
+
+        from flask import flash, redirect, url_for 
+ 
+        @catalog.route('/product-create', methods=['GET', 'POST']) 
+        def create_product(): 
+            if request.method == 'POST': 
+                name = request.form.get('name') 
+                price = request.form.get('price') 
+                categ_name = request.form.get('category') 
+                category = Category.query.filter_by
+                   (name=categ_name).first() 
+                if not category: 
+                    category = Category(categ_name) 
+                product = Product(name, price, category) 
+                db.session.add(product) 
+                db.session.commit() 
+                flash('The product %s has been created' % name, 'success') 
+                return redirect(url_for('catalog.product', id=product.id)) 
+            return render_template('product-create.html')
+
+
+    - Here's the template for the form:
+
+        # my_app/templates/product-create.html
+        -------------------------------------------
+        {% extends 'home.html' %} 
+ 
+        {% block container %} 
+          <div class="top-pad"> 
+            <form 
+                class="form-horizontal" 
+                method="POST" 
+                action="{{ url_for('catalog.create_product') }}" 
+                role="form"> 
+              <div class="form-group"> 
+                <label for="name" class="col-sm-2 control-
+                   label">Name</label> 
+                <div class="col-sm-10"> 
+                  <input type="text" class="form-control" id="name" 
+                     name="name"> 
+                </div> 
+              </div> 
+              <div class="form-group"> 
+                <label for="price" class="col-sm-2 control-
+                   label">Price</label> 
+                <div class="col-sm-10"> 
+                  <input type="number" class="form-control" id="price" 
+                     name="price"> 
+                </div> 
+              </div> 
+              <div class="form-group"> 
+                <label for="category" class="col-sm-2 control-
+                   label">Category</label> 
+                <div class="col-sm-10"> 
+                  <input type="text" class="form-control" id="category" 
+                     name="category"> 
+                </div> 
+              </div> 
+              <button type="submit" class="btn btn-
+                 default">Submit</button> 
+            </form> 
+          </div> 
+        {% endblock %} 
+
+
+    - We'll also have to add the flash messages to our base template:
+
+        # my_app/templates/base.html
+        -------------------------------------------
+        <br/> 
+        <div> 
+          {% for category, message in get_flashed_messages
+             (with_categories=true) %} 
+            <div class="alert alert-{{category}} alert-dismissable"> 
+              <button type="button" class="close" data-dismiss="alert" 
+                 aria-hidden="true">&times;</button> 
+              {{ message }} 
+            </div> 
+          {% endfor %} 
+        </div>
+
+
+
 - Implementing SQL-based searching
