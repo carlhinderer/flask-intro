@@ -264,9 +264,91 @@
 
 - Uploading Files via Forms
 
-    - 
+    - First, we'll need to add a couple configuration options to specify where files
+        will be stored.
+
+        # my_app/__init__.py
+        -------------------------------------------
+        import os 
+ 
+        ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif']) 
+        app.config['UPLOAD_FOLDER'] = os.path.realpath('.') + '/my_app/static/uploads'
 
 
+    - Now, we'll add the image path to the Product model and form.
+
+        # my_app/catalog/models.py
+        -------------------------------------------
+        from flask_wtf.file import FileField, FileRequired 
+ 
+        class Product(db.Model): 
+            image_path = db.Column(db.String(255)) 
+         
+            def __init__(self, name, price, category, image_path): 
+                self.image_path = image_path 
+         
+        class ProductForm(NameForm): 
+            image = FileField('Product Image', validators=[FileRequired()])
+
+
+    - We'll update the view method.
+
+        # my_app/catalog/views.py
+        -------------------------------------------
+        import os 
+        from werkzeug import secure_filename 
+        from my_app import ALLOWED_EXTENSIONS 
+         
+        def allowed_file(filename): 
+            return '.' in filename and \ 
+                    filename.lower().rsplit('.', 1)[1] in ALLOWED_EXTENSIONS 
+         
+        @catalog.route('/product-create', methods=['GET', 'POST']) 
+        def create_product(): 
+            form = ProductForm(request.form, csrf_enabled=False) 
+         
+            if form.validate_on_submit(): 
+                name = form.name.data 
+                price = form.price.data 
+                category = Category.query.get_or_404(form.category.data ) 
+                image = form.image.data
+
+                if allowed_file(image.filename): 
+                    filename = secure_filename(image.filename) 
+                    image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+                product = Product(name, price, category, filename) 
+                db.session.add(product) 
+                db.session.commit() 
+                flash('The product %s has been created' % name, 'success') 
+                return redirect(url_for('catalog.product', id=product.id)) 
+         
+            if form.errors: 
+                flash(form.errors, 'danger') 
+         
+            return render_template('product-create.html', form=form)
+
+
+    - Now, we'll add the new field to the product-create form.  Note that the
+        enctype="multipart/form-data" must be used with file imports.
+
+        # templates/product-create.html
+        -------------------------------------------
+        <form method="POST" 
+            action="{{ url_for('create_product') }}" 
+            role="form"  
+            enctype="multipart/form-data"> 
+        <!-- The other field definitions as always -->
+        <div class="form-group">
+          {{ form.image.label }}: {{ form.image(style='display:inline;') }}
+        </div>
+
+
+    - Rendering the image in the product page is easy.
+
+        # templates/product.html
+        -------------------------------------------
+        <img src="{{ url_for('static', filename='uploads/' + product.image_path) }}"/>
 
 
 
