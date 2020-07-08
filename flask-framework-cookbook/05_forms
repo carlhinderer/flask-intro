@@ -231,6 +231,43 @@
 
 - Creating a Custom Widget
 
+    - We can create custom widgets to control how our fields will look in the client.  
+        Each WTForms field has a default widget attached to it, but these can be customized.
+
+      For instance, our category field uses the 'Select' widget, which will render a select
+        list.  We'll replace that with a radio field.
+
+        # models.py
+        -------------------------------------------
+        from wtforms.widgets import html_params, Select, HTMLString 
+ 
+        class CustomCategoryInput(Select): 
+         
+            def __call__(self, field, **kwargs): 
+                kwargs.setdefault('id', field.id) 
+                html = [] 
+                for val, label, selected in field.iter_choices(): 
+                    html.append( 
+                        '<input type="radio" %s> %s' % ( 
+                            html_params( 
+                                name=field.name, value=val, checked=selected, **kwargs 
+                            ), label 
+                        ) 
+                    ) 
+                return HTMLString(' '.join(html)) 
+         
+        class CategoryField(SelectField): 
+            widget = CustomCategoryInput() 
+            ...
+
+
+
 - Uploading Files via Forms
+
+    - 
+
+
+
+
 
 - Protecting Applications from CSRF
