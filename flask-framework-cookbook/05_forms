@@ -1,0 +1,89 @@
+-----------------------------------------------------------------------
+|  CHAPTER 5 - WEBFORMS WITH WTFORMS                                  |
+-----------------------------------------------------------------------
+
+- Representing SQLAlchemy Data as a Form
+
+    - WTForms is a library that provides many fields with server-side validation by default.
+        We use the 'Flask-WTF' extension that integrates WTForms with Flask.
+
+        $ pip install Flask-WTF
+
+
+    - First, we will create a 'ProductForm' class to represent the fields in the form.  Note
+        that the 'coerce' option on the category means the category will be coerced to an integer
+        value prior to any validation or processing.
+
+        # models.py
+        -------------------------------------------
+        from flask_wtf import FlaskForm 
+        from wtforms import StringField, DecimalField, SelectField 
+         
+        class ProductForm(FlaskForm): 
+            name = StringField('Name') 
+            price = DecimalField('Price') 
+            category = SelectField('Category', coerce=int)
+
+
+    - Now, we can add a handler for the form.
+
+        # views.py
+        -------------------------------------------
+        from my_app.catalog.models import ProductForm 
+ 
+        @catalog.route('/product-create', methods=['GET', 'POST']) 
+        def create_product(): 
+            form = ProductForm(csrf_enabled=False) 
+         
+            categories = [(c.id, c.name) for c in Category.query.all()] 
+            form.category.choices = categories 
+         
+            if request.method == 'POST': 
+                name = form.name.data 
+                price = form.price.data 
+                category = Category.query.get_or_404( 
+                    form.category.data 
+                ) 
+                product = Product(name, price, category) 
+                db.session.add(product) 
+                db.session.commit() 
+                flash('The product %s has been created' % name, 'success') 
+                return redirect(url_for('catalog.product', id=product.id)) 
+            return render_template('product-create.html', form=form)
+
+
+    - And we can add our form to the 'product-create' template.
+
+        # templates/product-create.html
+        -------------------------------------------
+        {% extends 'home.html' %} 
+ 
+        {% block container %} 
+          <div class="top-pad"> 
+            <form method="POST" action="{{ 
+               url_for('catalog.create_product') }}" role="form"> 
+              <div class="form-group">{{ form.name.label }}: {{ 
+                 form.name() }}</div> 
+              <div class="form-group">{{ form.price.label }}: {{ 
+                 form.price() }}</div> 
+              <div class="form-group">{{ form.category.label }}: {{ 
+                 form.category() }}</div> 
+              <button type="submit" class="btn btn-
+                 default">Submit</button> 
+            </form> 
+          </div> 
+        {% endblock %} 
+
+
+
+- Validating Fields on the Server Side
+
+- Creating a Common Forms Set
+
+- Creating Custom Fields and Validation
+
+- Creating a Custom Widget
+
+- Uploading Files via Forms
+
+- Protecting Applications from CSRF

@@ -497,3 +497,8 @@
             return render_template( 
                 'products.html', products=products.paginate(page, 10) 
             )
+
+
+    - We can now search with queries like:
+
+        http://127.0.0.1:5000/product-search?name=iPhone
