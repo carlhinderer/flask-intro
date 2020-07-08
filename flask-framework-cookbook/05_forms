@@ -121,6 +121,53 @@
 
 - Creating a Common Forms Set
 
+    - Since many forms use common fields with common validators, it is useful to create
+        reusable form parts.
+
+      In our application, we'll have a form for products and a form for categories.  We'll
+        create a common form since they'll both use the product name.
+
+
+        # models.py
+        -------------------------------------------
+        class NameForm(FlaskForm): 
+            name = StringField('Name', validators=[InputRequired()]) 
+         
+        class ProductForm(NameForm): 
+            price = DecimalField('Price', validators=[ 
+                InputRequired(), NumberRange(min=Decimal('0.0')) 
+            ]) 
+            category = SelectField( 
+                'Category', validators=[InputRequired()], coerce=int 
+            ) 
+         
+        class CategoryForm(NameForm): 
+            pass
+
+
+    - We'll add a new view method for creating categories.
+
+        # views.py
+        -------------------------------------------
+        @catalog.route('/category-create', methods=['GET', 'POST']) 
+        def create_category(): 
+            form = CategoryForm(csrf_enabled=False) 
+         
+            if form.validate_on_submit(): 
+                name = form.name.data 
+                category = Category(name) 
+                db.session.add(category) 
+                db.session.commit() 
+                flash('The category %s has been created' % name, 'success') 
+                return redirect(url_for('catalog.category', id=category.id)) 
+         
+            if form.errors: 
+                flash(form.errors) 
+         
+            return render_template('category-create.html', form=form)
+
+
+
 - Creating Custom Fields and Validation
 
 - Creating a Custom Widget
