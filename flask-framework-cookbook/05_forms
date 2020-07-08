@@ -62,14 +62,13 @@
           <div class="top-pad"> 
             <form method="POST" action="{{ 
                url_for('catalog.create_product') }}" role="form"> 
-              <div class="form-group">{{ form.name.label }}: {{ 
-                 form.name() }}</div> 
-              <div class="form-group">{{ form.price.label }}: {{ 
-                 form.price() }}</div> 
-              <div class="form-group">{{ form.category.label }}: {{ 
-                 form.category() }}</div> 
-              <button type="submit" class="btn btn-
-                 default">Submit</button> 
+              <div class="form-group">{{ form.name.label }}: {{ form.name() }}
+              </div> 
+              <div class="form-group">{{ form.price.label }}: {{ form.price() }}
+              </div> 
+              <div class="form-group">{{ form.category.label }}: {{ form.category() }}
+              </div> 
+              <button type="submit" class="btn btn-default">Submit</button> 
             </form> 
           </div> 
         {% endblock %} 
@@ -77,6 +76,48 @@
 
 
 - Validating Fields on the Server Side
+
+    - It's pretty easy to add validations to WTForms fields.
+
+        # models.py
+        -------------------------------------------
+        from decimal import Decimal 
+        from wtforms.validators import InputRequired, NumberRange 
+         
+        class ProductForm(FlaskForm): 
+            name = StringField('Name', validators=[InputRequired()]) 
+            price = DecimalField('Price', validators=[ 
+                InputRequired(), NumberRange(min=Decimal('0.0')) 
+            ]) 
+            category = SelectField( 
+                'Category', validators=[InputRequired()], coerce=int
+            )
+
+
+    - Then we have to modify our view method:
+
+        # views.py
+        -------------------------------------------
+        def create_product():
+            ...
+            if request.method == 'POST' and form.validate(): 
+                ... same as before ...
+ 
+            if form.errors: 
+                flash(form.errors, 'danger')
+
+
+    - Note that we can also use the method:
+
+         if form.validate_on_submit():
+             ...
+
+      Which is equivalent to:
+
+         if request.method == 'POST' and form.validate():
+             ...
+
+
 
 - Creating a Common Forms Set
 
