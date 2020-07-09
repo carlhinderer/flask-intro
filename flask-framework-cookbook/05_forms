@@ -353,3 +353,64 @@
 
 
 - Protecting Applications from CSRF
+
+    - Flask does not provide any CSRF prevention by default, so we will need to use the
+        features provided by the WTF-Flask extension.
+
+      The protection is on by default, so we can just use:
+
+        # Create form
+        form = ProductForm()
+
+
+    - We'll need to make sure a secret key is configured for our application so that CSRF
+        tokens can be generated.  If we don't create a separate one for WTF-Flask, the 
+        application's secret key will be used.
+
+        # Secret key for WTF-Flask
+        app.config['WTF_CSRF_SECRET_KEY'] = 'random key for form' 
+
+
+    - Now, we just need to add the csrf token to the forms:
+
+        <form method="POST" action="/some-action-like-create-product"> 
+            {{ form.csrf_token }} 
+        </form>
+
+
+
+- CSRF in AJAX Requests
+
+    - Note that we also submit AJAX form posts.  For this, we need to add an option to our
+        application configuration.
+
+        # Add to app config
+        from flask_wtf.csrf import CSRFProtect 
+        CSRFProtect(app) 
+
+
+    - Now, we can access a CSRF token anywhere in our templates.  Here are 2 ways to do this:
+
+        1. Fetch the token in the script tag and use it in the POST request.
+
+             <script type="text/javascript">
+                 var csrfToken = "{{ csrf_token() }}";
+             </script>
+
+        2. Render the token in a 'meta' tag and use it wherever appropriate.
+
+             <meta name="csrf-token" content="{{ csrf_token() }}" />
+
+
+    - Finally, we add a CSRF token to our AJAX request.  To do this, we need to add the 
+        'X-CSRFToken' attribute to it.
+
+        var csrfToken = $('meta[name="csrf-token"]').attr('content'); 
+ 
+        $.ajaxSetup({ 
+            beforeSend: function(xhr, settings) { 
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) { 
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken) 
+                } 
+            } 
+        })
