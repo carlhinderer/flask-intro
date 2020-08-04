@@ -1,0 +1,68 @@
+-----------------------------------------------------------------------
+|  CHAPTER 17 - DEPLOYMENT                                            |
+-----------------------------------------------------------------------
+
+- Deployment Workflow
+
+- Logging of Errors During Production
+
+- Cloud Deployment
+
+
+- The Heroku Platform
+
+    - Preparing the Application
+
+    - Creating an Application
+
+    - Provisioning a Database
+
+    - Configuring Logging
+
+    - Configuring Email
+
+    - Adding a Top-Level Requirements Role
+
+    - Enabling Secure HTTP with Flask-SSLify
+
+    - Running a Production Web Server
+
+    - Adding a Procfile
+
+    - Testing with Heroku Local
+
+    - Deploying with 'git push'
+
+    - Reviewing Application Logs
+
+    - Deploying an Upgrade
+
+
+- Docker Containers
+
+    - Installing Docker
+
+    - Building a Container Image
+
+    - Running a Container
+
+    - Inspecting a Running Container
+
+    - Pushing Your Container to an External Registry
+
+    - Using an External Database
+
+    - Container Orchestration with Docker Compose
+
+    - Cleaning Up Old Containers and Images
+
+    - Using Docker in Production
+
+
+- Traditional Deployments
+
+    - Server Setup
+
+    - Importing Environment Variables
+
+    - Setting Up Logging
