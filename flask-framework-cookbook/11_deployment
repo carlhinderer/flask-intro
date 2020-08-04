@@ -1,0 +1,19 @@
+-----------------------------------------------------------------------
+|  CHAPTER 11 - DEPLOYMENT & POST-DEPLOYMENT                          |
+-----------------------------------------------------------------------
+
+- Deploying with Apache
+
+- Deploying with uWSGI and Nginx
+
+- Deploying with Gunicorn and Supervisor
+
+- Deploying with Tornado
+
+- Using S3 Storage for File Uploads
+
+- Deploying with Heroku
+
+- Deploying with AWS Elastic Beanstalk
+
+- Managing and Monitoring Performance with New Relic

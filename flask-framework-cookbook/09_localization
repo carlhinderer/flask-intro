@@ -1,0 +1,9 @@
+-----------------------------------------------------------------------
+|  CHAPTER 9 - INTERNATIONALIZATION & LOCALIZATION                    |
+-----------------------------------------------------------------------
+
+- Adding a New Language
+
+- Implementing Lazy Evaluation and the gettext/ngettext Functions
+
+- Implementing the Global Language Switching Action

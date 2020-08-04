@@ -1,0 +1,15 @@
+-----------------------------------------------------------------------
+|  CHAPTER 8 - ADMIN INTERFACE FOR FLASK APPS                         |
+-----------------------------------------------------------------------
+
+- Creating a Simple CRUD Interface
+
+- Using the Flask-Admin Extension
+
+- Registering Models with Flask-Admin
+
+- Creating Custom Forms and Actions
+
+- Using a WYSIWYG Editor for Textarea Integration
+
+- Creating User Roles

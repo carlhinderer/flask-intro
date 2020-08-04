@@ -1,0 +1,17 @@
+-----------------------------------------------------------------------
+|  CHAPTER 13 - OTHER TIPS & TRICKS                                   |
+-----------------------------------------------------------------------
+
+- Implementing Full-Text Search with Whoosh
+
+- Implementing Full-Text Search with Elasticsearch
+
+- Working with Signals
+
+- Using Caching with Your Application
+
+- Implementing Email Support for Flask Applications
+
+- Understanding Asynchronous Operations
+
+- Working with Celery

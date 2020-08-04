@@ -1,0 +1,23 @@
+-----------------------------------------------------------------------
+|  CHAPTER 10 - DEBUGGING, ERROR HANDLING, & TESTING                  |
+-----------------------------------------------------------------------
+
+- Setting Up Basic File Logging
+
+- Sending Emails on the Occurrence of Errors
+
+- Using Sentry to Monitor Exceptions
+
+- Debugging with pdb
+
+- Creating Our First Simple Test
+
+- Writing More Tests for Views and Logic
+
+- Nose Library Integration
+
+- Using Mocking to Avoid Real API Access
+
+- Determining Test Coverage
+
+- Using Profiling to Find Bottlenecks
