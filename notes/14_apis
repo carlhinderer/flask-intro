@@ -341,6 +341,30 @@
 
 - Token-Based Authentication
 
+    - To avoid having to constantly transfer sensitive passwords, a token-based
+        authentication solution can be used.
+
+      In token-based authentication, the client requests an access token by sending a 
+        request that includes the login credentials as authentication.  The token can
+        then be used to authenticate requests.  
+
+
+    - For security reasons, tokens are issued with an associated expiration.  When a token
+        expires, a client must re-authenticate to get a new one.
+
+
+    - Here are 2 new methods added to the User model that support generation and verification
+        authentication tokens using 'itsdangerous'.  
+
+
+        # 
+
+
+
+
+
+
+
 - Serializing Resources to and from JSON
 
 - Implementing Resource Endpoints

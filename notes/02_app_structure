@@ -30,7 +30,7 @@
         decorator.
 
         def index():
-            return '<h1>Hello World!'</h1>
+            return '<h1>Hello World!</h1>'
 
         app.add_url_rule('/', 'index', index)
 

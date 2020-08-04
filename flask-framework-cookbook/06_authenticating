@@ -1,0 +1,60 @@
+-----------------------------------------------------------------------
+|  CHAPTER 6 - AUTHENTICATING                                         |
+-----------------------------------------------------------------------
+
+- Creating a Simple Session-Based Authentication
+
+    - In session-based authentication, when the user logs in for the first time, the user
+        details are set in the session of the application's server side and stored in a 
+        cookie on the browser.
+
+      After that, when the user opens the application, the details stored in the cookie are
+        used to check against the session, and the user is automatically logged on if the 
+        session is alive.
+
+
+    - Remeber that the 'SECRET_KEY' application configuration setting should always be
+        specified.  Otherwise, the data stored in the cookie and the session on the server 
+        side will be plain text.
+
+
+    - Note that the implementation here is illustrative and should not be used in any
+        production application.
+
+
+    - First, we create a user model to store usernames and passwords.
+
+        # flask_authentication/my_app/auth/models.py
+        -------------------------------------------
+        from werkzeug.security import generate_password_hash, check_password_hash 
+        from flask_wtf import FlaskForm 
+        from wtforms import TextField, PasswordField 
+        from wtforms.validators import InputRequired, EqualTo 
+        from my_app import db 
+ 
+        class User(db.Model): 
+            id = db.Column(db.Integer, primary_key=True) 
+            username = db.Column(db.String(100)) 
+            pwdhash = db.Column(db.String()) 
+          
+            def __init__(self, username, password): 
+                self.username = username 
+                self.pwdhash = generate_password_hash(password) 
+          
+            def check_password(self, password): 
+                return check_password_hash(self.pwdhash, password)
+
+
+
+
+
+
+- Authenticating Using the Flask-Login Extension
+
+- Using Facebook for Authentication
+
+- Using Google for Authentication
+
+- Using Twitter for Authetication
+
+- Authenticating with LDAP
