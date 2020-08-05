@@ -2,13 +2,106 @@
 |  CHAPTER 12 - FOLLOWERS                                             |
 -----------------------------------------------------------------------
 
-- Database Relationships Revisited
-
 - Many-to-Many Relationships
 
-- Self-Referential Relationships
+    - Here is an example of a SQLAlchemy implementation of a M-M relationship
+        between students and courses.
+
+        registrations = db.Table('registrations',
+            db.Column('student_id', db.Integer, db.ForeignKey('students.id')),
+            db.Column('class_id', db.Integer, db.ForeignKey('classes.id'))
+        )
+        
+        class Student(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String)
+            classes = db.relationship('Class',
+                                      secondary=registrations,
+                                      backref=db.backref('students', lazy='dynamic'),
+                                      lazy='dynamic')
+        
+        class Class(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String)
+
+
+    - Then, we can use the relationships:
+
+        # Register student for a course
+        >>> s.classes.append(c)
+        >>> db.session.add(s)
+
+        # Access students and courses
+        >>> s.classes.all()
+        >>> c.students.all()
+
+        # Drop a student from a course
+        >>> s.classes.remove(c)
+
+
 
 - Advanced Many-to-Many Relationships
+
+    - The 'followers' relationship is self-referential between users.  Instead of 
+        creating a simple join table, we'll create a class for the join table.  That
+        way, we can also store extra relationship attributes if necessary.
+
+    
+    - Here is the new model and the 'User' model's relationship to it:
+
+        # app/models.py
+        ------------------------------------------
+        class Follow(db.Model):
+            __tablename__ = 'follows'
+            follower_id = db.Column(db.Integer, 
+                                    db.ForeignKey('users.id'), 
+                                    primary_key=True)
+            followed_id = db.Column(db.Integer, 
+                                    db.ForeignKey('users.id'), 
+                                    primary_key=True)
+            timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+        class User(UserMixin, db.Model):
+            # ...
+            followed = db.relationship('Follow',
+                                       foreign_keys=[Follow.follower_id],
+                                       backref=db.backref('follower', lazy='joined'),
+                                       lazy='dynamic',
+                                       cascade='all, delete-orphan')
+            followers = db.relationship('Follow',
+                                        foreign_keys=[Follow.followed_id],
+                                        backref=db.backref('followed', lazy='joined'),
+                                        lazy='dynamic',
+                                        cascade='all, delete-orphan')
+
+
+    - Now, we can add the User model methods used to wire up the following.
+
+        class User(db.Model):
+            # ...
+            def follow(self, user):
+                if not self.is_following(user):
+                    f = Follow(follower=self, followed=user)
+                    db.session.add(f)
+        
+            def unfollow(self, user):
+                f = self.followed.filter_by(followed_id=user.id).first()
+                if f:
+                    db.session.delete(f)
+        
+            def is_following(self, user):
+                if user.id is None:
+                    return False
+                return self.followed.filter_by(
+                    followed_id=user.id).first() is not None
+        
+            def is_followed_by(self, user):
+                if user.id is None:
+                    return False
+                return self.followers.filter_by(
+                    follower_id=user.id).first() is not None
+
+
 
 - Followers on the Profile Page
 
