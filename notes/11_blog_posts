@@ -7,7 +7,7 @@
     - We'll create a new model to represent blog posts.
 
         # app/models.py
-    
+        ------------------------------------------
         class Post(db.Model):
             __tablename__ = 'posts'
             id = db.Column(db.Integer, primary_key=True)
@@ -24,7 +24,7 @@
         the form for blog posts:
 
         # app/forms.py
-
+        ------------------------------------------
         class PostForm(FlaskForm):
             body = TextAreaField("What's on your mind?", validators=[DataRequired()])
             submit = SubmitField('Submit')
@@ -37,7 +37,7 @@
         old blog posts to the template.
 
         # app/main/views.py
-
+        ------------------------------------------
         @main.route('/', methods=['GET', 'POST'])
         def index():
             form = PostForm()
@@ -54,7 +54,7 @@
     - Here is the new home page template, now with blog posts:
 
         # app/templates/index.html
-
+        ------------------------------------------
         {% extends "base.html" %}
         {% import "bootstrap/wtf.html" as wtf %}
         ...
@@ -91,7 +91,7 @@
         the user.
 
         # app/main/views.py
-
+        ------------------------------------------
         @main.route('/user/<username>')
         def user(username):
             user = User.query.filter_by(username=username).first()
@@ -106,6 +106,7 @@
         both files.  By convention, we name these templates starting with an underscore.
 
         # app/templates/user.html
+        ------------------------------------------
         ...
         <h3>Posts by {{ user.username }}</h3>
         {% include '_posts.html' %}
@@ -118,7 +119,7 @@
     - Here is the new snippet template:
 
         # app/templates/_posts.html
-
+        ------------------------------------------
         <ul class="posts">
             {% for post in posts %}
             <li class="post">
@@ -173,6 +174,7 @@
     - Now, we'll add the code to fake the users and posts:
 
         # app/fake.py
+        ------------------------------------------
         from random import randint
         from sqlalchemy.exc import IntegrityError
         from faker import Faker
@@ -225,7 +227,7 @@
 
 
         # app/main/views.py
-
+        ------------------------------------------
         @main.route('/', methods=['GET', 'POST'])
         def index():
             # ...
@@ -306,7 +308,7 @@
 
 
         # app/templates/_macros.html
-
+        ------------------------------------------
         {% macro pagination_widget(pagination, endpoint) %}
         <ul class="pagination">
             <li{% if not pagination.has_prev %} class="disabled"{% endif %}>
@@ -351,7 +353,7 @@
     - We can add the pagination widget to our home page:
 
         # app/templates/index.html
-
+        ------------------------------------------
         ...
         {% include '_posts.html' %}
 
@@ -371,9 +373,112 @@
 
 - Rich-Text Posts with Markdown and Flask-PageDown
 
+    - We'll install a few new packages:
+
+        - PageDown, a client-side Markdown-to-HTML converter implemented in JavaScript
+
+        - Flask-PageDown, a PageDown wrapper for Flask that integrates PageDown with 
+            Flask-WTF forms
+
+        - Markdown, a server-side Markdown-to-HTML converter implemented in Python
+
+        - Bleach, an HTML sanitizer implemented in Python
+
+
+        # Install required packages
+        $ pip install flask-pagedown markdown bleach
+
+
+
 - Using Flask-PageDown
 
+    - The 'Flask-PageDown' extension defines a 'PageDownField' class that has the same
+        interface as the WTForms 'TextAreaField'.  First, we'll initialize the extension.
+
+        # app/__init__.py
+        ------------------------------------------
+        from flask_pagedown import PageDown
+        pagedown = PageDown()
+
+        def create_app(config_name):
+            # ...
+            pagedown.init_app(app)
+            # ...
+
+
+    - Next, we'll convert the text area control in our home page to a Markdown rich-text
+        editor by changing the 'body' field.
+
+        # app/main/forms.py
+        ------------------------------------------
+        from flask_pagedown.fields import PageDownField
+
+        class PostForm(FlaskForm):
+            body = PageDownField("What's on your mind?", validators=[Required()])
+            submit = SubmitField('Submit')
+
+
+    - And, add the template macro provided by 'Flask-PageDown'.
+
+        # app/templates/index.html
+        ------------------------------------------
+        {% block scripts %}
+        {{ super() }}
+        {{ pagedown.include_pagedown() }}
+        {% endblock %}
+
+
+
 - Handling Rich Text on the Server
+
+    - When the form is submitted, only the raw Markdown text is sent with the POST
+        request.  The preview of the marked up text is not sent for security reasons,
+        since an attacker could easily construct HTML sequences and submit them.
+
+      So, to avoid any risks, we store the raw text and convert it to Markdown on the
+        server side using the 'Markdown' Python converter.  The resulting HTML is
+        sanitized usin the 'Bleach' package to ensure only a short list of HTML tags
+        is allowed.
+
+
+    - We could render the markup in templates, but for efficiency we'll cache the markdown
+        for each post.
+
+        # app/models.py
+        ------------------------------------------
+        from markdown import markdown
+        import bleach
+        
+        class Post(db.Model):
+            # ...
+            body_html = db.Column(db.Text)
+            # ...
+
+            @staticmethod
+            def on_changed_body(target, value, oldvalue, initiator):
+                allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code',
+                                'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                                'h1', 'h2', 'h3', 'p']
+                target.body_html = bleach.linkify(bleach.clean(
+                    markdown(value, output_format='html'),
+                    tags=allowed_tags, strip=True))
+        
+        db.event.listen(Post.body, 'set', Post.on_changed_body)
+
+
+    - And, we update the posts template.
+
+        # app/templates/_posts.html
+        ------------------------------------------
+        <div class="post-body">
+            {% if post.body_html %}
+                {{ post.body_html | safe }}
+            {% else %}
+                {{ post.body }}
+            {% endif %}
+        </div>
+
+
 
 - Permanent Links to Blog Posts
 
