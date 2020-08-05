@@ -482,4 +482,107 @@
 
 - Permanent Links to Blog Posts
 
+    - So that posts can be shared, each post will be assigned a unique URL that 
+        references it.  Here is the route for individual posts:
+
+        # app/main/views.py
+        ------------------------------------------
+        @main.route('/post/<int:id>')
+        def post(id):
+            post = Post.query.get_or_404(id)
+            return render_template('post.html', posts=[post])
+
+
+    - And we'll also add a link to the permalink to the _posts template.
+
+        # app/templates/_posts.html
+        ------------------------------------------
+        <div class="post-content">
+            ...
+            <div class="post-footer">
+                <a href="{{ url_for('.post', id=post.id) }}">
+                    <span class="label label-default">Permalink</span>
+                </a>
+            </div>
+        </div>
+
+
+    - And, we'll need a new template for the posts themselves.
+
+        # app/templates/post.html
+        ------------------------------------------
+        {% extends "base.html" %}
+        
+        {% block title %}Flasky - Post{% endblock %}
+        
+        {% block page_content %}
+        {% include '_posts.html' %}
+        {% endblock %}
+
+
+
 - Blog Post Editor
+
+    - The last feature we'll add for blog posts is the ability to allow users to edit 
+        their own posts.  This editor will live in a stand-alone template.
+
+        # app/templates/edit_post.html
+        ------------------------------------------
+        {% extends "base.html" %}
+        {% import "bootstrap/wtf.html" as wtf %}
+        
+        {% block title %}Flasky - Edit Post{% endblock %}
+        
+        {% block page_content %}
+        <div class="page-header">
+            <h1>Edit Post</h1>
+        </div>
+        <div>
+            {{ wtf.quick_form(form) }}
+        </div>
+        {% endblock %}
+        
+        {% block scripts %}
+        {{ super() }}
+        {{ pagedown.include_pagedown() }}
+        {% endblock %}
+
+
+    - Here is the route to support the template:
+
+        # app/main/views.py
+        ------------------------------------------
+        @main.route('/edit/<int:id>', methods=['GET', 'POST'])
+        @login_required
+        def edit(id):
+            post = Post.query.get_or_404(id)
+            if current_user != post.author and \
+                    not current_user.can(Permission.ADMIN):
+                abort(403)
+            form = PostForm()
+            if form.validate_on_submit():
+                post.body = form.body.data
+                db.session.add(post)
+                db.session.commit()
+                flash('The post has been updated.')
+                return redirect(url_for('.post', id=post.id))
+            form.body.data = post.body
+            return render_template('edit_post.html', form=form)
+
+
+    - And, finally, we need to add the edit links to each individual post:
+
+        # app/templates/_posts.html
+        ------------------------------------------
+        <div class="post-footer">
+                ...
+            {% if current_user == post.author %}
+            <a href="{{ url_for('.edit', id=post.id) }}">
+                <span class="label label-primary">Edit</span>
+            </a>
+            {% elif current_user.is_administrator() %}
+            <a href="{{ url_for('.edit', id=post.id) }}">
+                <span class="label label-danger">Edit [Admin]</span>
+            </a>
+            {% endif %}
+        </div>
