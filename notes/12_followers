@@ -252,4 +252,155 @@
 
 - Querying Followed Posts Using a Database Join
 
+    - Right now, our home page just shows all posts in descending chronological order.
+        We'll change this to show tweets made by users followed by the logged in user
+        instead.
+
+      We could load all the users followed by the logged in user, then load each of their
+        tweets from the database, but this would be an inefficient 'N+1' problem.  So,
+        we'll add a manual join to load all the followed posts at once.
+
+        # app/models.py
+        ------------------------------------------
+        class User(db.Model):
+            # ...
+            @property
+            def followed_posts(self):
+                return Post.query.join(Follow, Follow.followed_id == Post.author_id)\
+                    .filter(Follow.follower_id == self.id)
+
+      Note that the property is created so that 'followed_posts' can be accessed without
+        '()' like other relationships.
+
+
+
 - Showing Followed Posts on the Home Page
+
+    - We'll update our 'index' view method.
+
+        # app/main/views.py
+        ------------------------------------------
+        @main.route('/', methods = ['GET', 'POST'])
+        def index():
+            # ...
+            show_followed = False
+            if current_user.is_authenticated:
+                show_followed = bool(request.cookies.get('show_followed', ''))
+            if show_followed:
+                query = current_user.followed_posts
+            else:
+                query = Post.query
+            pagination = query.order_by(Post.timestamp.desc()).paginate(
+                page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+                error_out=False)
+            posts = pagination.items
+            return render_template('index.html', form=form, posts=posts,
+                                   show_followed=show_followed, pagination=pagination)
+
+
+    - The choice of showing all or followed posts is stored in a cookie called 'show_followed'.
+        When set to a nonempty string, it indicates that only the followed posts should be
+        shown.  
+
+      The 'show_followed' cookie is set in 2 new routes.
+
+        # app/main/views.py
+        ------------------------------------------
+        @main.route('/all')
+        @login_required
+        def show_all():
+            resp = make_response(redirect(url_for('.index')))
+            resp.set_cookie('show_followed', '', max_age=30*24*60*60)  # 30 days
+            return resp
+        
+        @main.route('/followed')
+        @login_required
+        def show_followed():
+            resp = make_response(redirect(url_for('.index')))
+            resp.set_cookie('show_followed', '1', max_age=30*24*60*60)  # 30 days
+            return resp
+
+
+    - We'll add a navbar link for the followers.
+
+        # app/templates/index.html
+        ------------------------------------------
+        <div class="post-tabs">
+            <ul class="nav nav-tabs">
+                <li{% if not show_followed %} class="active"{% endif %}>
+                    <a href="{{ url_for('.show_all') }}">All</a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li{% if show_followed %} class="active"{% endif %}>
+                    <a href="{{ url_for('.show_followed')     }}">Followers</a>
+                </li>
+                {% endif %}
+            </ul>
+            {% include '_posts.html' %}
+        </div>
+
+
+    - And we'll add the new styles for the tabs:
+
+        # app/static/styles.css
+        ------------------------------------------
+        div.post-tabs {
+            margin-top: 16px;
+        }
+        div.post-tabs ul.posts {
+            margin: 0px;
+            border-top: none;
+        }
+
+
+    - And we'll adjust the followers and followed counts on the user template.
+
+        # app/templates/user.html
+        ------------------------------------------
+        <a href="{{ url_for('.followers', username=user.username) }}">
+            Followers: <span class="badge">{{ user.followers.count() - 1 }}</span>
+        </a>
+
+        <a href="{{ url_for('.followed_by', username=user.username) }}">
+            Following: <span class="badge">{{ user.followed.count() - 1 }}</span>
+        </a>
+
+
+
+- Adding Self Followers
+
+    - If we navigate to our list of followed posts, we'll see that our own posts 
+        don't appear on the list.  This is because users are not followers of
+        themselves.  
+
+      One easy way to fix this is to create a self-follow relationship when a new user
+        is created.
+
+        # app/models.py
+        ------------------------------------------
+        class User(UserMixin, db.Model):
+        # ...
+        def __init__(self, **kwargs):
+            # ...
+            self.follow(self)
+
+
+    - We can add a script to add these relationships for users that already exist.
+
+        # app/models.py
+        ------------------------------------------
+        class User(UserMixin, db.Model):
+            # ...
+            @staticmethod
+            def add_self_follows():
+                for user in User.query.all():
+                    if not user.is_following(user):
+                        user.follow(user)
+                        db.session.add(user)
+                        db.session.commit()
+            # ...
+
+
+      And run it in the shell.
+
+        >>> User.add_self_follows()
