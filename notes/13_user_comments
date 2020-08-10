@@ -4,6 +4,81 @@
 
 - Database Representation of Comments
 
+    - Comments apply to specific posts, so a 1-M relationship to the 'Posts' table is
+        defined.  Comments also have a 1-M relationship to the 'Users' table.
+
+      Here's the new comment model:
+
+        # app/models.py
+        ------------------------------------------
+        class Comment(db.Model):
+            __tablename__ = 'comments'
+            id = db.Column(db.Integer, primary_key=True)
+            body = db.Column(db.Text)
+            body_html = db.Column(db.Text)
+            timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+            disabled = db.Column(db.Boolean)
+            author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+            post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+        
+            @staticmethod
+            def on_changed_body(target, value, oldvalue, initiator):
+                allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code', 'em', 'i',
+                                'strong']
+                target.body_html = bleach.linkify(bleach.clean(
+                    markdown(value, output_format='html'),
+                    tags=allowed_tags, strip=True))
+        
+        db.event.listen(Comment.body, 'set', Comment.on_changed_body)
+
+        class User(db.Model):
+            # ...
+            comments = db.relationship('Comment', backref='author', lazy='dynamic')
+        
+        class Post(db.Model):
+            # ...
+            comments = db.relationship('Comment', backref='post', lazy='dynamic')
+
+
+
 - Comment Submission and Display
+
+    - We'll create a simple form for adding commments.
+
+        # app/main/forms.py
+        ------------------------------------------
+        class CommentForm(FlaskForm):
+            body = StringField('', validators=[DataRequired()])
+            submit = SubmitField('Submit')
+
+
+    - Here is the new view method for nalding the form:
+
+        # app/main/views.py
+        ------------------------------------------
+        @main.route('/post/<int:id>', methods=['GET', 'POST'])
+        def post(id):
+            post = Post.query.get_or_404(id)
+            form = CommentForm()
+            if form.validate_on_submit():
+                comment = Comment(body=form.body.data,
+                                  post=post,
+                                  author=current_user._get_current_object())
+                db.session.add(comment)
+                db.session.commit()
+                flash('Your comment has been published.')
+                return redirect(url_for('.post', id=post.id, page=-1))
+            page = request.args.get('page', 1, type=int)
+            if page == -1:
+                page = (post.comments.count() - 1) // \
+                       current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+            pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
+                page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+                error_out=False)
+            comments = pagination.items
+            return render_template('post.html', posts=[post], form=form,
+                                   comments=comments, pagination=pagination)
+
+
 
 - Comment Moderation
